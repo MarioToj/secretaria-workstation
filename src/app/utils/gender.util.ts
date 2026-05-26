@@ -18,11 +18,17 @@ const MALE_NAMES_EXCEPTIONS = new Set([
  * Determina heurísticamente el género de un nombre de persona en español.
  * Devuelve 'masculino' o 'femenino'.
  */
-export function determineOwnerGender(fullName: string): 'masculino' | 'femenino' {
+export function determineOwnerGender(fullName: string): 'masculino' | 'femenino' | 'empresa' {
   if (!fullName) return 'masculino';
 
-  // Limpiar y obtener el primer nombre
   const cleanName = fullName.trim().toUpperCase();
+
+  // Detectar si es una empresa / sociedad anónima / cooperativa / etc.
+  const companyKeywords = /\b(S\.?\s*A\.?|LTDA|LIMITADA|S\.?\s*C\.?|COOPERATIVA|CORP|CORPORATION|CORPORACION|CORPORACIÓN|INVERSIONES|ASOCIACION|ASOCIACIÓN|S\.?\s*A\.?\s*S\.?|COMPAÑIA|COMPAÑÍA|CIA\.?|GROUP|GRUPO|PRODUCCIONES|SERVICIOS|DISTRIBUIDORA|IMPORTADORA|COMERCIALIZADORA|CONSTRUCTORA)\b/i;
+  
+  if (companyKeywords.test(cleanName)) {
+    return 'empresa';
+  }
   const parts = cleanName.split(/\s+/);
   let firstName = parts[0];
 

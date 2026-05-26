@@ -1,0 +1,177 @@
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl h-full flex flex-col">
+  <!-- Encabezado -->
+  <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+    <div>
+      <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-indigo-400">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827a1.125 1.125 0 0 1 .26 1.43l-1.297 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.645-.869L9.594 3.94ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" />
+        </svg>
+        Ruta de Configuración / Patrones de Extracción (Regex)
+      </h2>
+      <p class="text-xs text-slate-400 mt-1">Si cambia el formato de la factura, edita las expresiones regulares aquí.</p>
+    </div>
+    <button 
+      (click)="onClose()" 
+      class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Contenido en 2 Columnas -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0 overflow-y-auto pr-1">
+    
+    <!-- Columna Izquierda: Ajustes Regex -->
+    <div class="space-y-4">
+      <h3 class="text-sm font-semibold text-indigo-400 uppercase tracking-wider">Configurar Expresiones Regulares</h3>
+      
+      <!-- Selector de Formatos/Perfiles -->
+      <div class="flex flex-col gap-1.5 p-4 bg-slate-950/40 border border-slate-800/80 rounded-2xl">
+        <label class="text-xs font-semibold text-slate-300 flex justify-between items-center">
+          <span>Perfil de Extracción / Formato</span>
+          <span class="text-[10px] text-indigo-400 font-mono">Guardado local</span>
+        </label>
+        
+        <div class="flex gap-2">
+          <div class="relative flex-1">
+            <select 
+              [ngModel]="selectedProfileName()" 
+              (ngModelChange)="selectProfile($event)"
+              class="w-full px-3 py-2.5 text-sm bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-200 rounded-xl outline-none transition-all appearance-none cursor-pointer"
+            >
+              <option value="Por defecto">Por defecto (Estándar FEL)</option>
+              @if (selectedProfileName() === 'Personalizado') {
+                <option value="Personalizado">Personalizado (Sin Guardar)</option>
+              }
+              @for (profile of savedProfiles(); track profile.name) {
+                <option [value]="profile.name">{{ profile.name }}</option>
+              }
+            </select>
+            <!-- Dropdown Arrow -->
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+              <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+              </svg>
+            </div>
+          </div>
+          
+          <!-- Actions on Selected Profile -->
+          <div class="flex gap-1.5">
+            <!-- Overwrite profile (only visible for saved custom profiles) -->
+            @if (selectedProfileName() !== 'Por defecto' && selectedProfileName() !== 'Personalizado') {
+              <button 
+                (click)="saveCurrentProfile()"
+                title="Guardar cambios en este perfil"
+                class="p-2.5 bg-slate-800 text-emerald-400 hover:text-emerald-300 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all cursor-pointer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </button>
+              
+              <button 
+                (click)="deleteProfile()"
+                title="Eliminar este perfil"
+                class="p-2.5 bg-slate-800 text-rose-400 hover:text-rose-300 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all cursor-pointer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+              </button>
+            }
+            
+            <button 
+              (click)="showSaveAsNewForm.set(!showSaveAsNewForm())"
+              title="Guardar como nuevo perfil"
+              class="p-2.5 bg-indigo-600/90 text-white hover:bg-indigo-600 rounded-xl transition-all cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Formulario para Guardar Nuevo Perfil -->
+        @if (showSaveAsNewForm()) {
+          <div class="mt-3 pt-3 border-t border-slate-800/80 flex flex-col gap-2">
+            <span class="text-xs font-medium text-slate-400">Nombre del nuevo perfil:</span>
+            <div class="flex gap-2">
+              <input 
+                type="text" 
+                [ngModel]="newProfileName()"
+                (ngModelChange)="newProfileName.set($event)"
+                placeholder="Ej. Constructora Milder"
+                class="flex-1 px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-200 rounded-lg outline-none"
+              />
+              <button 
+                (click)="saveAsNewProfile()"
+                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg text-xs transition-all cursor-pointer"
+              >
+                Guardar
+              </button>
+              <button 
+                (click)="showSaveAsNewForm.set(false)"
+                class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition-all cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      @for (field of fields; track field.key) {
+        <div class="flex flex-col gap-1.5 p-3 bg-slate-900/60 border border-slate-800/80 rounded-2xl">
+          <label class="text-xs font-semibold text-slate-300 flex justify-between">
+            <span>{{ field.label }}</span>
+            <span class="text-[10px] text-slate-500 font-mono">key: {{ field.key }}</span>
+          </label>
+          <input 
+            type="text" 
+            [(ngModel)]="editablePatterns[field.key]"
+            (ngModelChange)="onPatternChange()"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-200 font-mono rounded-xl outline-none transition-all"
+          />
+          <!-- Vista previa rápida del match sobre el texto plano -->
+          <span class="text-[11px] text-emerald-400/90 font-medium italic min-h-[16px] truncate">
+            {{ getMatchPreview(field.key) }}
+          </span>
+        </div>
+      }
+
+      <div class="pt-4 flex gap-3">
+        <button 
+          (click)="restoreDefaults()"
+          class="flex-1 py-2.5 px-4 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 font-medium rounded-xl text-sm transition-all"
+        >
+          Restaurar Valores por Defecto
+        </button>
+      </div>
+    </div>
+
+    <!-- Columna Derecha: Texto Plano Extraído del PDF -->
+    <div class="flex flex-col h-full min-h-[300px] lg:min-h-0">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-semibold text-indigo-400 uppercase tracking-wider">Texto Plano Extraído del PDF</h3>
+        <span class="text-[11px] text-slate-500 font-mono">{{ rawText().length }} caracteres</span>
+      </div>
+      
+      <div class="flex-1 min-h-0 bg-slate-950 border border-slate-800/80 rounded-2xl p-4 font-mono text-xs text-slate-400 overflow-y-auto whitespace-pre-wrap select-text leading-relaxed">
+        @if (rawText()) {
+          {{ rawText() }}
+        } @else {
+          <div class="h-full flex flex-col items-center justify-center text-slate-600 text-center p-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 mb-2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+            </svg>
+            <span>No se ha cargado ningún PDF aún. Sube una factura para ver el texto extraído aquí.</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

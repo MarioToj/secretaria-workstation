@@ -2,10 +2,10 @@ import { Component, ChangeDetectionStrategy, signal, inject, computed, effect } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PdfParserService, Factura, ExtractionPatterns } from './services/pdf-parser.service';
-import { PdfUploaderComponent } from './components/pdf-uploader.component';
-import { ExtractionSettingsComponent } from './components/extraction-settings.component';
-import { InvoiceListComponent } from './components/invoice-list.component';
-import { AgreementPreviewComponent } from './components/agreement-preview.component';
+import { PdfUploaderComponent } from './components/pdf-uploader/pdf-uploader.component';
+import { ExtractionSettingsComponent } from './components/extraction-settings/extraction-settings.component';
+import { InvoiceListComponent } from './components/invoice-list/invoice-list.component';
+import { AgreementPreviewComponent } from './components/agreement-preview/agreement-preview.component';
 import { getClosestPastWednesday, dateToSpanishWords, dateToSpanishCertDate } from './utils/number-to-words.util';
 
 @Component({

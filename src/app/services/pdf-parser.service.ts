@@ -38,7 +38,7 @@ export interface Factura {
   establecimiento: string;
   direccion: string;
   dueno: string;
-  tratamientoDueno: 'del señor' | 'de la señora';
+  tratamientoDueno: 'del señor' | 'de la señora' | 'de';
   solicitantes: string;
   productos: Producto[];
   total: number;
@@ -58,7 +58,7 @@ export class PdfParserService {
     numero: '(?:NÚMERO|Número|No\\.):?\\s*([0-9]+)',
     fecha: '(?:Fecha de emisi[oó]n|Fecha y hora de emisi[oó]n|Fecha|Emisi[oó]n):?\\s*([0-9]{1,2}[/-][a-zA-ZáéíóúÁÉÍÓÚ]+[/-][0-9]{2,4}|[0-9]{1,2}[/-][0-9]{1,2}[/-][0-9]{2,4}|[0-9]{1,2}\\s+de\\s+[a-zA-ZáéíóúÁÉÍÓÚ]+\\s+de\\s+[0-9]{4})',
     establecimiento: '(?:(?:[0-9a-fA-F\\-]{36})?\\\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\\s\\-\\.\\&\\/\\,\\"\\\'«»“”‘’]{3,50})(?=\\s*Serie:)|(?:Nombre Comercial|Establecimiento|Nombre del Emisor|Emisor):?\\\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\\s\\-\\.\\&\\/\\,\\"\\\'«»“”‘’]{3,50})(?=\\s*(?:Serie:|Dirección:|NIT:|Receptor:|$)))',
-    direccion: '(?:Dirección del Establecimiento|Dirección Comercial|Dirección|Ubicado en):\\s*([0-9a-zA-ZáéíóúÁÉÍÓÚñÑ\\s\\-\\.,/]+?)(?=\\s*(?:Numero Acceso|NIT|Receptor|Fecha|Moneda|$))|\\b[0-9]{10}\\s+([0-9a-zA-ZáéíóúÁÉÍÓÚñÑ\\s\\-\\.,/]{10,100})(?=\\s*Numero Acceso)',
+    direccion: '(?:Dirección del Establecimiento|Dirección Comercial|Dirección|Ubicado en):\\s*([0-9a-zA-ZáéíóúÁÉÍÓÚñÑ\\s\\-\\.,/]+?)(?=\\s*(?:Numero Acceso|NIT|Receptor|Fecha|Moneda|$))|\\b[0-9]{8,12}\\s+([0-9a-zA-ZáéíóúÁÉÍÓÚñÑ\\s\\-\\.,/]{10,100})(?=\\s*Numero Acceso)',
     dueno: '(?:Propietario|Dueño|Nombre del Propietario|Representante Legal|Nombre del Emisor|Nombre Emisor|Razon Social|Razón Social|Emisor|Contribuyente):?\\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\\s\\,\\.]{3,60})(?=\\s*(?:Serie:|Dirección:|NIT:|Receptor:|$))|(?:Factura[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]*\\s+\\d+\\s+)?([a-zA-ZáéíóúÁÉÍÓÚñÑ\\s\\,\\.]{3,60})(?=\\s+NÚMERO DE AUTORIZACIÓN)'
   };
 
@@ -140,8 +140,9 @@ export class PdfParserService {
     const direccion = this.matchPattern(text, patterns.direccion);
     const dueno = this.matchPattern(text, patterns.dueno);
 
-    // Deducir el género del dueño
-    const tratamientoDueno = determineOwnerGender(dueno) === 'femenino' ? 'de la señora' : 'del señor';
+    // Deducir el género del dueño o si es una empresa/sociedad
+    const gender = determineOwnerGender(dueno);
+    const tratamientoDueno = gender === 'empresa' ? 'de' : (gender === 'femenino' ? 'de la señora' : 'del señor');
 
     // Extracción heurística de la tabla de productos
     const productos = this.extractProductsHeuristic(text);
@@ -178,13 +179,13 @@ export class PdfParserService {
     const lines = text.split('\n');
 
     // 1. Regex específica para Guatecompras / SAT FEL:
-    // [No] [Servicio/Bien] [Cantidad] [Descripción] [Precio Unitario] [Descuento] [Total]
+    // [No] [Servicio/Bien] [Cantidad] [Descripción] [Precio Unitario] [Descuentos...] [Total]
     // Ejemplo: "1 Servicio 6 Vestuario y maquillaje... 1,800.00 0.00 10,800.00"
-    const satRegex = /\b\d+\s+(?:Servicio|Bien|B\/S)\s+(\d+)\s+([\s\S]+?)\s+([\d,]+\.\d{2})\s+(?:[\d,]+\.\d{2}\s+)?([\d,]+\.\d{2})/gi;
+    const satRegex = /\b\d+\s+(?:Servicio|Bien|B\/S)\s+(\d+)\s+([\s\S]+?)\s+([\d,]+\.\d{2})\s+(?:[\d,]+\.\d{2}\s+){0,2}([\d,]+\.\d{2})/gi;
 
     // 2. Regex genérica de respaldo:
-    // [Cantidad] [Descripción] [Precio] [Total]
-    const genericRegex = /\b(\d+)\s+([a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-\.\/]+?)\s+Q?\.?\s*([\d,]+\.\d{2})\s+Q?\.?\s*([\d,]+\.\d{2})/g;
+    // [Cantidad] [Descripción] [Precio] [Descuentos...] [Total]
+    const genericRegex = /\b(\d+)\s+([a-zA-ZáéíóúÁÉÍÓÚñÑ\s\-\.\/]+?)\s+Q?\.?\s*([\d,]+\.\d{2})\s+(?:[\d,]+\.\d{2}\s+){0,2}Q?\.?\s*([\d,]+\.\d{2})/g;
 
     for (const line of lines) {
       let match;
@@ -273,10 +274,11 @@ export class PdfParserService {
     
     return productos.map(p => {
       const precioLetras = numberToQuetzalesWords(p.precioUnitario, { uppercase: false, includeExact: false });
-      const generoLetras = p.genero === 'femenino' ? 'cada una' : 'cada uno';
+      const cleanDesc = p.descripcion.trim().replace(/\.+$/, '');
+      const generoLetras = p.cantidad === 1 ? '' : (p.genero === 'femenino' ? ' cada una' : ' cada uno');
       const formattedPrice = p.precioUnitario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       
-      return `${p.cantidad} ${p.descripcion.toLowerCase()}, con un valor de ${precioLetras} (Q.${formattedPrice}) ${generoLetras}`;
+      return `${p.cantidad} ${cleanDesc}, con un valor de ${precioLetras} (Q.${formattedPrice})${generoLetras}`;
     }).join(', ');
   }
 

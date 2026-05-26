@@ -41,31 +41,15 @@ export async function downloadAsDocx(
     htmlContent = htmlContent.substring(0, tableIndex);
   }
 
-  // Envolver en párrafos de Word
-  let paragraphs = htmlContent
-    .split(/<br\s*\/?>/i)
-    .map(p => p.trim())
-    .filter(p => p.length > 0)
-    .map(p => {
-      const plainText = p.replace(/<[^>]*>/g, '').trim();
-      if (plainText === 'ACUERDA' || plainText === 'ACUERDA:') {
-        return `<p class="MsoNormal" style="text-align:center;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${fontSizeGeneral}pt;font-family:${fontStack};"><strong>ACUERDA:</strong></p>`;
-      }
-      
-      // Clasificar según contenido: Cierre de Certificación, Certificación Gral, Inciso, o General
-      const isCierre = p.includes('…No habiendo más…') || p.includes('CERTIFICO:');
-      const isCert = p.includes('LA INFRASCRITA SECRETARIA') || p.includes('Y, PARA REMITIR');
-      const isInciso = /^\s*(?:<strong>)?[IVXLCDM\d]+(?:<\/strong>)?\./i.test(p);
-      
-      const size = isCierre ? fontSizeCierreCert : isCert ? fontSizeCert : isInciso ? fontSizeIncisos : fontSizeGeneral;
-      
-      if (isInciso) {
-        return `<p class="MsoNormal" style="text-align:justify;line-height:115%;margin-left:0.5in;text-indent:-0.25in;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${p}</p>`;
-      }
-      
-      return `<p class="MsoNormal" style="text-align:justify;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${p}</p>`;
-    })
-    .join('');
+  // Envolver en párrafos y listas nativas de Word
+  let paragraphs = parseContentToHtml(
+    htmlContent,
+    fontStack,
+    fontSizeGeneral,
+    fontSizeCert,
+    fontSizeIncisos,
+    fontSizeCierreCert
+  );
 
   if (tablePart) {
     // Reemplazar la tipografía y el tamaño en las celdas de firmas
@@ -122,6 +106,10 @@ export async function downloadAsDocx(
         strong {
           font-weight: bold;
         }
+        ol, li {
+          font-family: ${fontStack};
+          font-size: ${fontSizeIncisos}pt;
+        }
       </style>
     </head>
     <body>
@@ -147,7 +135,7 @@ export async function downloadAsDocx(
       gutter: 0
     },
     font: fontFamily,
-    fontSize: fontSizeGeneral
+    fontSize: fontSizeIncisos * 2
   };
 
   // Cargar de forma dinámica la versión local adaptada para navegador de la librería html-to-docx
@@ -217,29 +205,14 @@ export function downloadAsDoc(
     htmlContent = htmlContent.substring(0, tableIndex);
   }
 
-  let paragraphs = htmlContent
-    .split(/<br\s*\/?>/i)
-    .map(p => p.trim())
-    .filter(p => p.length > 0)
-    .map(p => {
-      const plainText = p.replace(/<[^>]*>/g, '').trim();
-      if (plainText === 'ACUERDA' || plainText === 'ACUERDA:') {
-        return `<p class="MsoNormal" style="text-align:center;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${fontSizeGeneral}pt;font-family:${fontStack};"><strong>ACUERDA:</strong></p>`;
-      }
-      
-      const isCierre = p.includes('…No habiendo más…') || p.includes('CERTIFICO:');
-      const isCert = p.includes('LA INFRASCRITA SECRETARIA') || p.includes('Y, PARA REMITIR');
-      const isInciso = /^\s*(?:<strong>)?[IVXLCDM\d]+(?:<\/strong>)?\./i.test(p);
-      
-      const size = isCierre ? fontSizeCierreCert : isCert ? fontSizeCert : isInciso ? fontSizeIncisos : fontSizeGeneral;
-      
-      if (isInciso) {
-        return `<p class="MsoNormal" style="text-align:justify;line-height:115%;margin-left:0.5in;text-indent:-0.25in;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${p}</p>`;
-      }
-      
-      return `<p class="MsoNormal" style="text-align:justify;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${p}</p>`;
-    })
-    .join('');
+  let paragraphs = parseContentToHtml(
+    htmlContent,
+    fontStack,
+    fontSizeGeneral,
+    fontSizeCert,
+    fontSizeIncisos,
+    fontSizeCierreCert
+  );
 
   if (tablePart) {
     let modifiedTable = tablePart
@@ -305,6 +278,10 @@ export function downloadAsDoc(
         strong {
           font-weight: bold;
         }
+        ol, li {
+          font-family: ${fontStack};
+          font-size: ${fontSizeIncisos}pt;
+        }
       </style>
     </head>
     <body>
@@ -328,4 +305,73 @@ export function downloadAsDoc(
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+function parseContentToHtml(
+  htmlContent: string,
+  fontStack: string,
+  fontSizeGeneral: number,
+  fontSizeCert: number,
+  fontSizeIncisos: number,
+  fontSizeCierreCert: number
+): string {
+  const lines = htmlContent
+    .split(/<br\s*\/?>/i)
+    .map(p => p.trim())
+    .filter(p => p.length > 0);
+
+  let resultHtml = '';
+  let inList = false;
+  let hasReachedAcuerda = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const plainText = line.replace(/<[^>]*>/g, '').trim();
+
+    if (plainText === 'ACUERDA' || plainText === 'ACUERDA:') {
+      if (inList) {
+        resultHtml += '</ol>';
+        inList = false;
+      }
+      hasReachedAcuerda = true;
+      resultHtml += `<p class="MsoNormal" style="text-align:center;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${fontSizeGeneral}pt;font-family:${fontStack};"><strong>ACUERDA:</strong></p>`;
+      continue;
+    }
+
+    const isCierre = line.includes('…No habiendo más…') || line.includes('CERTIFICO:');
+    const isCert = line.includes('LA INFRASCRITA SECRETARIA') || line.includes('Y, PARA REMITIR');
+
+    // Expresión regular mejorada: exige que el número romano o arábigo esté seguido de un punto (.) y un espacio.
+    const match = line.match(/^\s*(?:<strong>|<b>|<u>|<span[^>]*>)*([IVXLCDM]+|\d+)(?:\s*(?:<\/strong>|<\/b>|<\/u>|<\/span>)*\s*\.\s*|\s*\.\s*(?:<\/strong>|<\/b>|<\/u>|<\/span>)*\s*)\s*(.*)/);
+
+    if (match && hasReachedAcuerda && !isCierre && !isCert) {
+      const content = match[2].trim();
+      
+      if (!inList) {
+        // Especificar list-style-type: upper-roman en el estilo para forzar el tipo romano nativo de Word
+        resultHtml += `<ol style="list-style-type:upper-roman;margin-top:0pt;margin-bottom:0pt;padding-left:0.5in;font-family:${fontStack};font-size:${fontSizeIncisos}pt;line-height:115%;">`;
+        inList = true;
+      }
+      resultHtml += `<li style="text-align:justify;font-family:${fontStack};font-size:${fontSizeIncisos}pt;margin-bottom:0pt;line-height:115%;">${content}</li>`;
+    } else {
+      if (inList) {
+        resultHtml += '</ol>';
+        inList = false;
+      }
+      // Si ya pasamos la sección ACUERDA y nos topamos con un párrafo que no es inciso,
+      // desactivamos la bandera para evitar falsos positivos en el resto del documento (firmas, cierre de certificación, etc.)
+      if (hasReachedAcuerda && (isCierre || isCert || !match)) {
+        hasReachedAcuerda = false;
+      }
+
+      const size = isCierre ? fontSizeCierreCert : isCert ? fontSizeCert : fontSizeGeneral;
+      resultHtml += `<p class="MsoNormal" style="text-align:justify;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${line}</p>`;
+    }
+  }
+
+  if (inList) {
+    resultHtml += '</ol>';
+  }
+
+  return resultHtml;
 }
