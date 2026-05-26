@@ -33,12 +33,12 @@ export class AgreementPreviewComponent {
   readonly fechaCertificacion = input<string>('');
 
   readonly fontFamily = input<string>('Arial');
-  readonly fontSizeGeneral = input<number>(12);
-  readonly fontSizeCert = input<number>(12);
-  readonly fontSizeIncisos = input<number>(12);
-  readonly fontSizeFirmas = input<number>(12);
+  readonly fontSizeGeneral = input<number>(11);
+  readonly fontSizeCert = input<number>(11);
+  readonly fontSizeIncisos = input<number>(11);
+  readonly fontSizeFirmas = input<number>(11);
   readonly cierreCertificacionText = input<string>('…No habiendo más… Damos fe: (fs.). —Ilegible. Mateo Velásquez Ralios. Alcalde Municipal. — (fs) Ilegibles Concejo Municipal. CERTIFICO: (f) Ilegible. Karen Raquél Gómez López. Secretaria Municipal. – Se ven dos sellos.');
-  readonly fontSizeCierreCert = input<number>(12);
+  readonly fontSizeCierreCert = input<number>(11);
   readonly espacioFirmas = input<number>(4);
   readonly lineSpacing = input<number>(1.0);
 

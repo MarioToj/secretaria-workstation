@@ -66,6 +66,7 @@ export async function downloadAsDocx(
         if (!newStyle.includes('font-size')) {
           newStyle += `;font-size:${fontSizeFirmas}pt`;
         }
+        newStyle += ';mso-ansi-language:ES-GT;mso-fareast-language:ES-GT;mso-bidi-language:ES-GT;';
         return `style="${newStyle}"`;
       });
     paragraphs += modifiedTable;
@@ -97,6 +98,9 @@ export async function downloadAsDocx(
           font-size: ${fontSizeGeneral}pt;
           color: #000000;
           line-height: ${lineSpacing};
+          mso-ansi-language: ES-GT;
+          mso-fareast-language: ES-GT;
+          mso-bidi-language: ES-GT;
         }
         p.MsoNormal {
           margin: 0in;
@@ -104,6 +108,9 @@ export async function downloadAsDocx(
           text-align: justify;
           font-family: ${fontStack};
           font-size: ${fontSizeGeneral}pt;
+          mso-ansi-language: ES-GT;
+          mso-fareast-language: ES-GT;
+          mso-bidi-language: ES-GT;
         }
         strong {
           font-weight: bold;
@@ -111,6 +118,9 @@ export async function downloadAsDocx(
         ol, li {
           font-family: ${fontStack};
           font-size: ${fontSizeIncisos}pt;
+          mso-ansi-language: ES-GT;
+          mso-fareast-language: ES-GT;
+          mso-bidi-language: ES-GT;
         }
       </style>
     </head>
@@ -135,7 +145,8 @@ export async function downloadAsDocx(
       gutter: 0
     },
     font: fontFamily,
-    fontSize: fontSizeIncisos * 2
+    fontSize: fontSizeIncisos * 2,
+    lang: 'es-GT'
   };
 
   // Cargar de forma dinámica la versión local adaptada para navegador de la librería html-to-docx
@@ -233,6 +244,7 @@ export function downloadAsDoc(
         if (!newStyle.includes('font-size')) {
           newStyle += `;font-size:${fontSizeFirmas}pt`;
         }
+        newStyle += ';mso-ansi-language:ES-GT;mso-fareast-language:ES-GT;mso-bidi-language:ES-GT;';
         return `style="${newStyle}"`;
       });
     paragraphs += modifiedTable;
@@ -251,7 +263,8 @@ export function downloadAsDoc(
   const documentTemplate = `
     <html xmlns:o="urn:schemas-microsoft-com:office:office" 
           xmlns:w="urn:schemas-microsoft-com:office:word" 
-          xmlns="http://www.w3.org/TR/REC-html40">
+          xmlns="http://www.w3.org/TR/REC-html40"
+          lang="es">
     <head>
       <meta charset="utf-8">
       <title>Acuerdo Municipal</title>
@@ -274,6 +287,9 @@ export function downloadAsDoc(
           font-size: ${fontSizeGeneral}pt;
           color: #000000;
           line-height: ${lineSpacing};
+          mso-ansi-language: ES-GT;
+          mso-fareast-language: ES-GT;
+          mso-bidi-language: ES-GT;
         }
         p.MsoNormal {
           margin: 0in;
@@ -281,6 +297,9 @@ export function downloadAsDoc(
           text-align: justify;
           font-family: ${fontStack};
           font-size: ${fontSizeGeneral}pt;
+          mso-ansi-language: ES-GT;
+          mso-fareast-language: ES-GT;
+          mso-bidi-language: ES-GT;
         }
         strong {
           font-weight: bold;
@@ -288,6 +307,9 @@ export function downloadAsDoc(
         ol, li {
           font-family: ${fontStack};
           font-size: ${fontSizeIncisos}pt;
+          mso-ansi-language: ES-GT;
+          mso-fareast-language: ES-GT;
+          mso-bidi-language: ES-GT;
         }
       </style>
     </head>
@@ -345,7 +367,7 @@ function parseContentToHtml(
         inList = false;
       }
       hasReachedAcuerda = true;
-      resultHtml += `<p class="MsoNormal" style="text-align:center;line-height:${lineSpacing * 100}%;margin-top:0pt;margin-bottom:0pt;font-size:${fontSizeGeneral}pt;font-family:${fontStack};"><strong>ACUERDA:</strong></p>`;
+      resultHtml += `<p class="MsoNormal" lang="es-GT" style="text-align:center;line-height:${lineSpacing * 100}%;margin-top:0pt;margin-bottom:0pt;font-size:${fontSizeGeneral}pt;font-family:${fontStack};mso-ansi-language:ES-GT;mso-fareast-language:ES-GT;mso-bidi-language:ES-GT;"><strong>ACUERDA:</strong></p>`;
       continue;
     }
 
@@ -360,10 +382,10 @@ function parseContentToHtml(
       
       if (!inList) {
         // Especificar list-style-type: upper-roman en el estilo para forzar el tipo romano nativo de Word
-        resultHtml += `<ol style="list-style-type:upper-roman;margin-top:0pt;margin-bottom:0pt;padding-left:0.5in;font-family:${fontStack};font-size:${fontSizeIncisos}pt;line-height:${lineSpacing * 100}%;">`;
+        resultHtml += `<ol lang="es-GT" style="list-style-type:upper-roman;margin-top:0pt;margin-bottom:0pt;padding-left:0.5in;font-family:${fontStack};font-size:${fontSizeIncisos}pt;line-height:${lineSpacing * 100}%;mso-ansi-language:ES-GT;mso-fareast-language:ES-GT;mso-bidi-language:ES-GT;">`;
         inList = true;
       }
-      resultHtml += `<li style="text-align:justify;font-family:${fontStack};font-size:${fontSizeIncisos}pt;margin-bottom:0pt;line-height:${lineSpacing * 100}%;">${content}</li>`;
+      resultHtml += `<li lang="es-GT" style="text-align:justify;font-family:${fontStack};font-size:${fontSizeIncisos}pt;margin-bottom:0pt;line-height:${lineSpacing * 100}%;mso-ansi-language:ES-GT;mso-fareast-language:ES-GT;mso-bidi-language:ES-GT;">${content}</li>`;
     } else {
       if (inList) {
         resultHtml += '</ol>';
@@ -376,7 +398,7 @@ function parseContentToHtml(
       }
 
       const size = isCierre ? fontSizeCierreCert : isCert ? fontSizeCert : fontSizeGeneral;
-      resultHtml += `<p class="MsoNormal" style="text-align:justify;line-height:${lineSpacing * 100}%;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${line}</p>`;
+      resultHtml += `<p class="MsoNormal" lang="es-GT" style="text-align:justify;line-height:${lineSpacing * 100}%;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};mso-ansi-language:ES-GT;mso-fareast-language:ES-GT;mso-bidi-language:ES-GT;">${line}</p>`;
     }
   }
 

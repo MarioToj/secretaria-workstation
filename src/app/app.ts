@@ -62,12 +62,12 @@ export class App {
 
   // Tipografías y tamaños personalizados
   readonly fontFamily = signal<string>(this.loadStringFromStorage('fontFamily', 'Arial'));
-  readonly fontSizeGeneral = signal<number>(this.loadNumFromStorage('fontSizeGeneral', 12));
-  readonly fontSizeCert = signal<number>(this.loadNumFromStorage('fontSizeCert', 12));
-  readonly fontSizeIncisos = signal<number>(this.loadNumFromStorage('fontSizeIncisos', 12));
-  readonly fontSizeFirmas = signal<number>(this.loadNumFromStorage('fontSizeFirmas', 12));
+  readonly fontSizeGeneral = signal<number>(this.loadNumFromStorage('fontSizeGeneral', 11));
+  readonly fontSizeCert = signal<number>(this.loadNumFromStorage('fontSizeCert', 11));
+  readonly fontSizeIncisos = signal<number>(this.loadNumFromStorage('fontSizeIncisos', 11));
+  readonly fontSizeFirmas = signal<number>(this.loadNumFromStorage('fontSizeFirmas', 11));
   readonly cierreCertificacionText = signal<string>('…No habiendo más… Damos fe: (fs.). —Ilegible. Mateo Velásquez Ralios. Alcalde Municipal. — (fs) Ilegibles Concejo Municipal. CERTIFICO: (f) Ilegible. Karen Raquél Gómez López. Secretaria Municipal. – Se ven dos sellos.');
-  readonly fontSizeCierreCert = signal<number>(this.loadNumFromStorage('fontSizeCierreCert', 12));
+  readonly fontSizeCierreCert = signal<number>(this.loadNumFromStorage('fontSizeCierreCert', 11));
   readonly espacioFirmas = signal<number>(this.loadNumFromStorage('espacioFirmas', 4));
   readonly lineSpacing = signal<number>(this.loadNumFromStorage('lineSpacing', 1.0));
   private isCierreCustomized = false;
