@@ -3,8 +3,12 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { determineOwnerGender, determineProductGender } from '../utils/gender.util';
 import { numberToQuetzalesWords } from '../utils/number-to-words.util';
 
-// Configurar el worker de PDF.js usando el archivo copiado en el directorio público
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+// Configurar el worker de PDF.js usando el archivo copiado en el directorio público con fallback dinámico
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = window.location.origin + '/pdf.worker.min.mjs';
+} else {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+}
 
 
 
@@ -63,9 +67,36 @@ export class PdfParserService {
    */
   async extractText(file: File): Promise<string> {
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      const pdf = await loadingTask.promise;
+      let arrayBuffer: ArrayBuffer;
+      if (typeof file.arrayBuffer === 'function') {
+        try {
+          arrayBuffer = await file.arrayBuffer();
+        } catch (e) {
+          arrayBuffer = await this.readAsArrayBuffer(file);
+        }
+      } else {
+        arrayBuffer = await this.readAsArrayBuffer(file);
+      }
+
+      let pdf;
+      try {
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        pdf = await loadingTask.promise;
+      } catch (workerError) {
+        console.warn('Fallo al inicializar el Web Worker de PDF.js, intentando con Fake Worker...', workerError);
+        // Intentar con el fake worker (sin workerSrc) para entornos móviles/HTTP locales restrictivos
+        const originalWorkerSrc = pdfjsLib.GlobalWorkerOptions.workerSrc;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+        try {
+          const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+          pdf = await loadingTask.promise;
+        } catch (fallbackError) {
+          // Restablecer por si acaso y lanzar el error original
+          pdfjsLib.GlobalWorkerOptions.workerSrc = originalWorkerSrc;
+          throw fallbackError;
+        }
+      }
+
       let fullText = '';
 
       for (let i = 1; i <= pdf.numPages; i++) {
@@ -84,6 +115,15 @@ export class PdfParserService {
       console.error('Error al extraer texto del PDF con PDF.js:', error);
       throw new Error('No se pudo procesar el archivo PDF. Asegúrate de que no esté corrupto o protegido.');
     }
+  }
+
+  private readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+    return new Promise<ArrayBuffer>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(file);
+    });
   }
 
   /**

@@ -3,10 +3,10 @@
  * utilizando el formato HTML-to-Wordprocessing con configuraciones de página y márgenes numéricos precisos.
  */
 
-export function downloadAsDocx(
+export function downloadAsDoc(
   filename: string, 
   contentText: string,
-  pageSize: 'letter' | 'legal' | 'a4' = 'letter',
+  pageSize: 'letter' | 'legal' | 'a4' | 'foolscap' = 'letter',
   marginTop: number = 1.0,
   marginRight: number = 1.0,
   marginBottom: number = 1.0,
@@ -82,7 +82,8 @@ export function downloadAsDocx(
   const sizes = {
     letter: '8.5in 11.0in', // Carta
     legal: '8.5in 14.0in',  // Oficio (Guatemala)
-    a4: '8.27in 11.69in'    // A4
+    a4: '8.27in 11.69in',   // A4
+    foolscap: '8.5in 13.0in' // Oficio / Folio (Guatemala)
   };
 
   const selectedSize = sizes[pageSize] || sizes.letter;
@@ -134,17 +135,19 @@ export function downloadAsDocx(
     </html>
   `;
 
-  // Crear un blob de tipo aplicación de Word (.docx) con codificación UTF-8
+  // Crear un blob de tipo aplicación de Word (.doc) con codificación UTF-8
+  // Se usa MIME type application/msword y extensión .doc para que Word abra el contenido HTML
+  // de forma nativa sin mostrar un error de archivo corrupto.
   const blob = new Blob(['\ufeff' + documentTemplate], {
-    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8'
+    type: 'application/msword;charset=utf-8'
   });
 
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   
-  // Guardar como .docx para que sea totalmente compatible y moderno para MS Word
-  const cleanFilename = filename.endsWith('.docx') ? filename : filename + '.docx';
+  // Guardar como .doc para compatibilidad en la apertura directa en MS Word
+  const cleanFilename = filename.endsWith('.doc') ? filename : filename + '.doc';
   link.download = cleanFilename;
   
   document.body.appendChild(link);

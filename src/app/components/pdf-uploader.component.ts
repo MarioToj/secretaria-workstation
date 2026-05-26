@@ -82,7 +82,7 @@ export class PdfUploaderComponent {
       const pdfs: File[] = [];
       for (let i = 0; i < event.dataTransfer.files.length; i++) {
         const file = event.dataTransfer.files[i];
-        if (file.type === 'application/pdf') {
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
           pdfs.push(file);
         }
       }
@@ -98,7 +98,7 @@ export class PdfUploaderComponent {
       const pdfs: File[] = [];
       for (let i = 0; i < input.files.length; i++) {
         const file = input.files[i];
-        if (file.type === 'application/pdf') {
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
           pdfs.push(file);
         }
       }

@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input, signal, computed, effect, Vi
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Factura } from '../services/pdf-parser.service';
-import { downloadAsDocx } from '../utils/docx-generator.util';
+import { downloadAsDoc } from '../utils/docx-generator.util';
 import { numberToQuetzalesWords } from '../utils/number-to-words.util';
 
 @Component({
@@ -35,7 +35,7 @@ import { numberToQuetzalesWords } from '../utils/number-to-words.util';
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25M9 16.5v.75m3-3v3m3-3v3m-10.125-3h14.25" />
             </svg>
-            Word (DOCX)
+            Word (DOC)
           </button>
           
           <button 
@@ -62,7 +62,8 @@ import { numberToQuetzalesWords } from '../utils/number-to-words.util';
             class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-200 rounded-lg cursor-pointer outline-none focus:border-indigo-500 font-semibold"
           >
             <option value="letter">Carta (Letter)</option>
-            <option value="legal">Oficio (Legal)</option>
+            <option value="legal">Oficio (Legal 14")</option>
+            <option value="foolscap">Oficio / Folio (8.5" x 13")</option>
             <option value="a4">A4</option>
           </select>
         </div>
@@ -248,7 +249,7 @@ export class AgreementPreviewComponent {
   });
 
   // Configuración de página mediante Signals
-  protected readonly selectedPageSize = signal<'letter' | 'legal' | 'a4'>('letter');
+  protected readonly selectedPageSize = signal<'letter' | 'legal' | 'a4' | 'foolscap'>('letter');
   
   // Márgenes numéricos individuales en pulgadas
   protected readonly marginTop = signal<number>(1.0);
@@ -276,7 +277,7 @@ export class AgreementPreviewComponent {
       const r = this.marginRight();
 
       // Mapear tamaño
-      const sizePrint = size === 'letter' ? 'letter' : size === 'legal' ? '8.5in 14.0in' : 'A4';
+      const sizePrint = size === 'letter' ? 'letter' : size === 'legal' ? '8.5in 14.0in' : size === 'foolscap' ? '8.5in 13.0in' : 'A4';
       const marginPrint = `${t}in ${r}in ${b}in ${l}in`;
 
       // Aplicar al elemento raíz del documento
@@ -367,7 +368,8 @@ export class AgreementPreviewComponent {
     const ratios = {
       letter: '8.5 / 11',
       legal: '8.5 / 14',
-      a4: '8.27 / 11.69'
+      a4: '8.27 / 11.69',
+      foolscap: '8.5 / 13'
     };
     return ratios[this.selectedPageSize()];
   }
@@ -419,7 +421,7 @@ export class AgreementPreviewComponent {
       .replace(/\s+/g, ' ') // Colapsar espacios múltiples
       .trim();
 
-    downloadAsDocx(
+    downloadAsDoc(
       filename, 
       textToExport, 
       this.selectedPageSize(), 
