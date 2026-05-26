@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input, signal, computed, effect, Vi
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Factura } from '../services/pdf-parser.service';
-import { downloadAsDoc } from '../utils/docx-generator.util';
+import { downloadAsDocx, downloadAsDoc } from '../utils/docx-generator.util';
 import { numberToQuetzalesWords } from '../utils/number-to-words.util';
 
 @Component({
@@ -29,8 +29,19 @@ import { numberToQuetzalesWords } from '../utils/number-to-words.util';
         <div class="flex gap-2">
           <button 
             type="button" 
-            (click)="exportToWord()"
+            (click)="exportToWord('docx')"
             class="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl text-xs transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25M9 16.5v.75m3-3v3m3-3v3m-10.125-3h14.25" />
+            </svg>
+            Word (DOCX)
+          </button>
+          
+          <button 
+            type="button" 
+            (click)="exportToWord('doc')"
+            class="flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 text-slate-200 font-medium rounded-xl text-xs transition-all active:scale-[0.98]"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25M9 16.5v.75m3-3v3m3-3v3m-10.125-3h14.25" />
@@ -174,23 +185,29 @@ import { numberToQuetzalesWords } from '../utils/number-to-words.util';
             </div>
 
             @if (certificar()) {
-              <p [style.font-size.pt]="fontSizeCert()" style="margin: 0; text-align: justify;">
-                …No habiendo más… Damos fe: (fs.). —Ilegible. <strong>{{ nombreAlcalde() }}</strong>. Alcalde Municipal. — (fs) Ilegibles Concejo Municipal. CERTIFICO: (f) Ilegible. <strong>{{ nombreSecretaria() }}</strong>. Secretaria Municipal. – Se ven dos sellos.
+              <p [style.font-size.pt]="fontSizeCierreCert()" style="margin: 0; text-align: justify;">
+                {{ cierreCertificacionText() }}
               </p>
               <p [style.font-size.pt]="fontSizeCert()" style="margin: 0; text-align: justify;">
                 <strong>Y, PARA REMITIR A DONDE CORRESPONDA, COMPULSO LA PRESENTE CERTIFICACIÓN, DEBIDAMENTE CONFRONTADA CON SU ORIGINAL, LA QUE SELLO Y FIRMO, EN LA VILLA DE JOYABAJ, DEPARTAMENTO DE QUICHÉ, A {{ fechaCertificacion() }}.</strong>
               </p>
               
-              <table border="0" width="100%" class="mt-4 border-collapse" style="border: none;">
+              <table border="0" style="width: 100%; table-layout: fixed; border: none; border-collapse: collapse;" class="mt-4">
                 <tr [style.font-size.pt]="fontSizeFirmas()">
-                  <td width="45%" align="center" class="align-top text-center" style="border: none; padding: 48px 0 0 0; color: #000; line-height: 1.15;">
-                    <strong>{{ nombreSecretaria() }}</strong><br/>
-                    <span style="font-size: 0.85em; opacity: 0.8;">Secretaria Municipal</span>
+                  <td style="width: 2.9in; border: none; padding: 0; color: #000; line-height: 1.15; vertical-align: top;">
+                    <p style="text-align: center; margin: 0;">
+                      <br/><br/><br/><br/>
+                      <strong>{{ nombreSecretaria() }}</strong><br/>
+                      <span style="font-size: 0.85em; opacity: 0.8;">Secretaria Municipal</span>
+                    </p>
                   </td>
-                  <td width="10%" style="border: none; padding: 0;">&nbsp;</td>
-                  <td width="45%" align="center" class="align-top text-center" style="border: none; padding: 48px 0 0 0; color: #000; line-height: 1.15;">
-                    Vo. Bo. &nbsp; <strong>{{ nombreAlcalde() }}</strong><br/>
-                    <span style="font-size: 0.85em; opacity: 0.8;">Alcalde Municipal</span>
+                  <td style="width: 0.7in; border: none; padding: 0;">&nbsp;</td>
+                  <td style="width: 2.9in; border: none; padding: 0; color: #000; line-height: 1.15; vertical-align: top;">
+                    <p style="text-align: center; margin: 0;">
+                      <br/><br/><br/><br/>
+                      Vo. Bo. &nbsp; <strong>{{ nombreAlcalde() }}</strong><br/>
+                      <span style="font-size: 0.85em; opacity: 0.8;">Alcalde Municipal</span>
+                    </p>
                   </td>
                 </tr>
               </table>
@@ -242,6 +259,8 @@ export class AgreementPreviewComponent {
   readonly fontSizeCert = input<number>(12);
   readonly fontSizeIncisos = input<number>(12);
   readonly fontSizeFirmas = input<number>(12);
+  readonly cierreCertificacionText = input<string>('…No habiendo más… Damos fe: (fs.). —Ilegible. Mateo Velásquez Ralios. Alcalde Municipal. — (fs) Ilegibles Concejo Municipal. CERTIFICO: (f) Ilegible. Karen Raquél Gómez López. Secretaria Municipal. – Se ven dos sellos.');
+  readonly fontSizeCierreCert = input<number>(12);
 
   protected readonly fontStack = computed(() => {
     const font = this.fontFamily();
@@ -329,9 +348,9 @@ export class AgreementPreviewComponent {
 
     const certHeader = `**LA INFRASCRITA SECRETARIA MUNICIPAL DE LA VILLA DE JOYABAJ, DEL DEPARTAMENTO DE QUICHÉ, CERTIFICA:** Tener a la Vista el libro de Actas de la Corporación Municipal en uso debidamente autorizado por la Contraloría General de Cuentas de Quiché, en el cual se encuentra el Acta número **${acta}**, correspondiente a la Sesión Pública **${tipo}**, celebrada con fecha **${fSesion}**, en donde aparece el punto que copiado conducentemente establece:`;
     
-    const certFooter = `…No habiendo más… Damos fe: (fs.). —Ilegible. **${alc}**. Alcalde Municipal. — (fs) Ilegibles Concejo Municipal. CERTIFICO: (f) Ilegible. **${secr}**. Secretaria Municipal. – Se ven dos sellos.\n\n**Y, PARA REMITIR A DONDE CORRESPONDA, COMPULSO LA PRESENTE CERTIFICACIÓN, DEBIDAMENTE CONFRONTADA CON SU ORIGINAL, LA QUE SELLO Y FIRMO, EN LA VILLA DE JOYABAJ, DEPARTAMENTO DE QUICHÉ, A ${fCert}.**`;
+    const certFooter = `${this.cierreCertificacionText()}\n\n**Y, PARA REMITIR A DONDE CORRESPONDA, COMPULSO LA PRESENTE CERTIFICACIÓN, DEBIDAMENTE CONFRONTADA CON SU ORIGINAL, LA QUE SELLO Y FIRMO, EN LA VILLA DE JOYABAJ, DEPARTAMENTO DE QUICHÉ, A ${fCert}.**`;
     
-    const firmasTable = `<table border="0" width="100%" style="margin-top:16pt;border-collapse:collapse;border:none;"><tr><td width="45%" align="center" style="font-family:Arial,sans-serif;font-size:12.0pt;line-height:115%;text-align:center;border:none;padding:48pt 0 0 0;"><strong>${secr}</strong><br/>Secretaria Municipal</td><td width="10%" style="border:none;padding:0;">&nbsp;</td><td width="45%" align="center" style="font-family:Arial,sans-serif;font-size:12.0pt;line-height:115%;text-align:center;border:none;padding:48pt 0 0 0;">Vo. Bo. &nbsp; <strong>${alc}</strong><br/>Alcalde Municipal</td></tr></table>`;
+    const firmasTable = `<table border="0" style="width: 100%; table-layout: fixed; border: none; border-collapse: collapse; margin-top: 16pt;"><tr><td style="width: 2.9in; border: none; padding: 0; vertical-align: top;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: 115%;"><br/><br/><br/><br/><strong>${secr}</strong><br/>Secretaria Municipal</p></td><td style="width: 0.7in; border: none; padding: 0;">&nbsp;</td><td style="width: 2.9in; border: none; padding: 0; vertical-align: top;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: 115%;"><br/><br/><br/><br/>Vo. Bo. &nbsp; <strong>${alc}</strong><br/>Alcalde Municipal</p></td></tr></table>`;
 
     return `${certHeader}\n\n${text}\n\n${certFooter}\n\n${firmasTable}`;
   });
@@ -374,7 +393,7 @@ export class AgreementPreviewComponent {
     return ratios[this.selectedPageSize()];
   }
 
-  exportToWord(): void {
+  exportToWord(format: 'docx' | 'doc'): void {
     const textToExport = this.activeTab() === 'editor' ? this.manualText : this.compiledMarkdownText();
     
     const parseDateToNumeric = (dateStr: string): string => {
@@ -421,20 +440,39 @@ export class AgreementPreviewComponent {
       .replace(/\s+/g, ' ') // Colapsar espacios múltiples
       .trim();
 
-    downloadAsDoc(
-      filename, 
-      textToExport, 
-      this.selectedPageSize(), 
-      this.marginTop(), 
-      this.marginRight(), 
-      this.marginBottom(), 
-      this.marginLeft(),
-      this.fontFamily(),
-      this.fontSizeGeneral(),
-      this.fontSizeCert(),
-      this.fontSizeIncisos(),
-      this.fontSizeFirmas()
-    );
+    if (format === 'docx') {
+      downloadAsDocx(
+        filename, 
+        textToExport, 
+        this.selectedPageSize(), 
+        this.marginTop(), 
+        this.marginRight(), 
+        this.marginBottom(), 
+        this.marginLeft(),
+        this.fontFamily(),
+        this.fontSizeGeneral(),
+        this.fontSizeCert(),
+        this.fontSizeIncisos(),
+        this.fontSizeFirmas(),
+        this.fontSizeCierreCert()
+      );
+    } else {
+      downloadAsDoc(
+        filename, 
+        textToExport, 
+        this.selectedPageSize(), 
+        this.marginTop(), 
+        this.marginRight(), 
+        this.marginBottom(), 
+        this.marginLeft(),
+        this.fontFamily(),
+        this.fontSizeGeneral(),
+        this.fontSizeCert(),
+        this.fontSizeIncisos(),
+        this.fontSizeFirmas(),
+        this.fontSizeCierreCert()
+      );
+    }
   }
 
   printPdf(): void {

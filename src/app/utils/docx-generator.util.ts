@@ -1,9 +1,9 @@
 /**
- * Utilidad para exportar texto con formato a un documento compatible con Microsoft Word (.doc / .docx)
- * utilizando el formato HTML-to-Wordprocessing con configuraciones de página y márgenes numéricos precisos.
+ * Utilidad para exportar texto con formato a un documento nativo compatible con Microsoft Word (.docx)
+ * utilizando el formateador nativo de @turbodocx/html-to-docx (sin altchunks)
+ * para asegurar máxima compatibilidad con Microsoft Word Web / Online, Google Docs y dispositivos móviles.
  */
-
-export function downloadAsDoc(
+export async function downloadAsDocx(
   filename: string, 
   contentText: string,
   pageSize: 'letter' | 'legal' | 'a4' | 'foolscap' = 'letter',
@@ -15,8 +15,14 @@ export function downloadAsDoc(
   fontSizeGeneral: number = 12,
   fontSizeCert: number = 12,
   fontSizeIncisos: number = 12,
-  fontSizeFirmas: number = 12
-): void {
+  fontSizeFirmas: number = 12,
+  fontSizeCierreCert: number = 12
+): Promise<void> {
+  // Asegurar compatibilidad de la variable 'global' en el navegador para la librería @turbodocx/html-to-docx
+  if (typeof window !== 'undefined' && !(window as any).global) {
+    (window as any).global = window;
+  }
+
   // Configurar la pila de fuentes (font stack) para tipografías especiales como Arial Narrow
   const fontStack = fontFamily === 'Arial Narrow' 
     ? "'Arial Narrow', Arial, sans-serif" 
@@ -46,11 +52,12 @@ export function downloadAsDoc(
         return `<p class="MsoNormal" style="text-align:center;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${fontSizeGeneral}pt;font-family:${fontStack};"><strong>ACUERDA:</strong></p>`;
       }
       
-      // Clasificar según contenido: Certificación, Inciso, o General
-      const isCert = p.includes('LA INFRASCRITA SECRETARIA') || p.includes('Y, PARA REMITIR') || p.includes('…No habiendo más…') || p.includes('CERTIFICO:');
+      // Clasificar según contenido: Cierre de Certificación, Certificación Gral, Inciso, o General
+      const isCierre = p.includes('…No habiendo más…') || p.includes('CERTIFICO:');
+      const isCert = p.includes('LA INFRASCRITA SECRETARIA') || p.includes('Y, PARA REMITIR');
       const isInciso = /^\s*(?:<strong>)?[IVXLCDM\d]+(?:<\/strong>)?\./i.test(p);
       
-      const size = isCert ? fontSizeCert : isInciso ? fontSizeIncisos : fontSizeGeneral;
+      const size = isCierre ? fontSizeCierreCert : isCert ? fontSizeCert : isInciso ? fontSizeIncisos : fontSizeGeneral;
       
       if (isInciso) {
         return `<p class="MsoNormal" style="text-align:justify;line-height:115%;margin-left:0.5in;text-indent:-0.25in;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${p}</p>`;
@@ -78,18 +85,189 @@ export function downloadAsDoc(
     paragraphs += modifiedTable;
   }
 
-  // Definición de Tamaños de Hoja (pulgadas)
+  // Definición de Tamaños de Hoja (en pulgadas y convirtiendo a twips: 1 in = 1440 twips)
+  let width = 12240; // 8.5 in * 1440
+  let height = 15840; // 11.0 in * 1440
+
+  if (pageSize === 'legal') {
+    height = 20160; // 14.0 in * 1440
+  } else if (pageSize === 'a4') {
+    width = 11909; // 8.27 in * 1440
+    height = 16834; // 11.69 in * 1440
+  } else if (pageSize === 'foolscap') {
+    height = 18720; // 13.0 in * 1440
+  }
+
+  // Plantilla HTML compatible con MS Word con dimensiones dinámicas
+  const documentTemplateHTML = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="utf-8">
+      <title>Acuerdo Municipal</title>
+      <style>
+        body {
+          font-family: ${fontStack};
+          font-size: ${fontSizeGeneral}pt;
+          color: #000000;
+          line-height: 1.15;
+        }
+        p.MsoNormal {
+          margin: 0in;
+          margin-bottom: 0pt;
+          text-align: justify;
+          font-family: ${fontStack};
+          font-size: ${fontSizeGeneral}pt;
+        }
+        strong {
+          font-weight: bold;
+        }
+      </style>
+    </head>
+    <body>
+      ${paragraphs}
+    </body>
+    </html>
+  `;
+
+  // Configuración de opciones para el generador nativo
+  const documentOptions = {
+    orientation: 'portrait' as const,
+    pageSize: {
+      width: width,
+      height: height
+    },
+    margins: {
+      top: Math.round(marginTop * 1440),
+      right: Math.round(marginRight * 1440),
+      bottom: Math.round(marginBottom * 1440),
+      left: Math.round(marginLeft * 1440),
+      header: 720,
+      footer: 720,
+      gutter: 0
+    },
+    font: fontFamily,
+    fontSize: fontSizeGeneral
+  };
+
+  // Cargar de forma dinámica la versión local adaptada para navegador de la librería html-to-docx
+  // @ts-ignore
+  const module = await import('./html-to-docx-browser.js');
+  const HTMLtoDOCX = module.default;
+
+  // Convertir HTML a un Blob de DOCX nativo compatible con Word Online
+  HTMLtoDOCX(documentTemplateHTML, null, documentOptions)
+    .then((docxContent: any) => {
+      const blob = docxContent instanceof Blob 
+        ? docxContent 
+        : new Blob([docxContent], {
+            type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Guardar como .docx nativo
+      const cleanFilename = filename.endsWith('.docx') ? filename : filename + '.docx';
+      link.download = cleanFilename;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    })
+    .catch((error: any) => {
+      console.error('Error al generar el archivo .docx nativo:', error);
+    });
+}
+
+/**
+ * Utilidad para exportar texto con formato a un documento compatible con Microsoft Word (.doc)
+ * utilizando el formato HTML-to-Wordprocessing clásico (HTML enmascarado como .doc)
+ * como alternativa de respaldo en caso de problemas con el formato DOCX.
+ */
+export function downloadAsDoc(
+  filename: string, 
+  contentText: string,
+  pageSize: 'letter' | 'legal' | 'a4' | 'foolscap' = 'letter',
+  marginTop: number = 1.0,
+  marginRight: number = 1.0,
+  marginBottom: number = 1.0,
+  marginLeft: number = 1.0,
+  fontFamily: string = 'Arial',
+  fontSizeGeneral: number = 12,
+  fontSizeCert: number = 12,
+  fontSizeIncisos: number = 12,
+  fontSizeFirmas: number = 12,
+  fontSizeCierreCert: number = 12
+): void {
+  const fontStack = fontFamily === 'Arial Narrow' 
+    ? "'Arial Narrow', Arial, sans-serif" 
+    : fontFamily;
+
+  let htmlContent = contentText
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br/>');
+
+  let tablePart = '';
+  const tableIndex = htmlContent.indexOf('<table');
+  if (tableIndex !== -1) {
+    tablePart = htmlContent.substring(tableIndex);
+    htmlContent = htmlContent.substring(0, tableIndex);
+  }
+
+  let paragraphs = htmlContent
+    .split(/<br\s*\/?>/i)
+    .map(p => p.trim())
+    .filter(p => p.length > 0)
+    .map(p => {
+      const plainText = p.replace(/<[^>]*>/g, '').trim();
+      if (plainText === 'ACUERDA' || plainText === 'ACUERDA:') {
+        return `<p class="MsoNormal" style="text-align:center;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${fontSizeGeneral}pt;font-family:${fontStack};"><strong>ACUERDA:</strong></p>`;
+      }
+      
+      const isCierre = p.includes('…No habiendo más…') || p.includes('CERTIFICO:');
+      const isCert = p.includes('LA INFRASCRITA SECRETARIA') || p.includes('Y, PARA REMITIR');
+      const isInciso = /^\s*(?:<strong>)?[IVXLCDM\d]+(?:<\/strong>)?\./i.test(p);
+      
+      const size = isCierre ? fontSizeCierreCert : isCert ? fontSizeCert : isInciso ? fontSizeIncisos : fontSizeGeneral;
+      
+      if (isInciso) {
+        return `<p class="MsoNormal" style="text-align:justify;line-height:115%;margin-left:0.5in;text-indent:-0.25in;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${p}</p>`;
+      }
+      
+      return `<p class="MsoNormal" style="text-align:justify;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${p}</p>`;
+    })
+    .join('');
+
+  if (tablePart) {
+    let modifiedTable = tablePart
+      .replace(/font-family:[^;"]+/g, `font-family:${fontStack}`)
+      .replace(/font-size:[^;"]+/g, `font-size:${fontSizeFirmas}pt`)
+      .replace(/style="([^"]*)"/g, (match, styleContent) => {
+        let newStyle = styleContent;
+        if (!newStyle.includes('font-family')) {
+          newStyle += `;font-family:${fontStack}`;
+        }
+        if (!newStyle.includes('font-size')) {
+          newStyle += `;font-size:${fontSizeFirmas}pt`;
+        }
+        return `style="${newStyle}"`;
+      });
+    paragraphs += modifiedTable;
+  }
+
   const sizes = {
-    letter: '8.5in 11.0in', // Carta
-    legal: '8.5in 14.0in',  // Oficio (Guatemala)
-    a4: '8.27in 11.69in',   // A4
-    foolscap: '8.5in 13.0in' // Oficio / Folio (Guatemala)
+    letter: '8.5in 11.0in',
+    legal: '8.5in 14.0in',
+    a4: '8.27in 11.69in',
+    foolscap: '8.5in 13.0in'
   };
 
   const selectedSize = sizes[pageSize] || sizes.letter;
   const selectedMargin = `${marginTop}in ${marginRight}in ${marginBottom}in ${marginLeft}in`;
 
-  // Plantilla HTML compatible con MS Word con dimensiones dinámicas
   const documentTemplate = `
     <html xmlns:o="urn:schemas-microsoft-com:office:office" 
           xmlns:w="urn:schemas-microsoft-com:office:word" 
@@ -135,9 +313,6 @@ export function downloadAsDoc(
     </html>
   `;
 
-  // Crear un blob de tipo aplicación de Word (.doc) con codificación UTF-8
-  // Se usa MIME type application/msword y extensión .doc para que Word abra el contenido HTML
-  // de forma nativa sin mostrar un error de archivo corrupto.
   const blob = new Blob(['\ufeff' + documentTemplate], {
     type: 'application/msword;charset=utf-8'
   });
@@ -146,7 +321,6 @@ export function downloadAsDoc(
   const link = document.createElement('a');
   link.href = url;
   
-  // Guardar como .doc para compatibilidad en la apertura directa en MS Word
   const cleanFilename = filename.endsWith('.doc') ? filename : filename + '.doc';
   link.download = cleanFilename;
   

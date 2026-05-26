@@ -66,6 +66,9 @@ export class App {
   readonly fontSizeCert = signal<number>(this.loadNumFromStorage('fontSizeCert', 12));
   readonly fontSizeIncisos = signal<number>(this.loadNumFromStorage('fontSizeIncisos', 12));
   readonly fontSizeFirmas = signal<number>(this.loadNumFromStorage('fontSizeFirmas', 12));
+  readonly cierreCertificacionText = signal<string>('…No habiendo más… Damos fe: (fs.). —Ilegible. Mateo Velásquez Ralios. Alcalde Municipal. — (fs) Ilegibles Concejo Municipal. CERTIFICO: (f) Ilegible. Karen Raquél Gómez López. Secretaria Municipal. – Se ven dos sellos.');
+  readonly fontSizeCierreCert = signal<number>(this.loadNumFromStorage('fontSizeCierreCert', 12));
+  private isCierreCustomized = false;
 
   // Factura seleccionada activa
   readonly activeInvoice = computed(() => {
@@ -209,6 +212,12 @@ export class App {
     this.selectedInvoiceId.set('');
     this.rawText.set('');
     this.errorMessage.set('');
+    this.isCierreCustomized = false;
+  }
+
+  onCierreCertTextChange(val: string): void {
+    this.isCierreCustomized = true;
+    this.cierreCertificacionText.set(val);
   }
 
   constructor() {
@@ -219,6 +228,15 @@ export class App {
         localStorage.setItem('invoice_app_fontSizeCert', this.fontSizeCert().toString());
         localStorage.setItem('invoice_app_fontSizeIncisos', this.fontSizeIncisos().toString());
         localStorage.setItem('invoice_app_fontSizeFirmas', this.fontSizeFirmas().toString());
+        localStorage.setItem('invoice_app_fontSizeCierreCert', this.fontSizeCierreCert().toString());
+      }
+    });
+
+    effect(() => {
+      const alc = this.nombreAlcalde();
+      const secr = this.nombreSecretaria();
+      if (!this.isCierreCustomized) {
+        this.cierreCertificacionText.set(`…No habiendo más… Damos fe: (fs.). —Ilegible. ${alc}. Alcalde Municipal. — (fs) Ilegibles Concejo Municipal. CERTIFICO: (f) Ilegible. ${secr}. Secretaria Municipal. – Se ven dos sellos.`);
       }
     });
   }
