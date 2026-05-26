@@ -1,3 +1,15 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
 
-@import 'tailwindcss';
+@media print {
+  html, body {
+    background: white !important;
+    color: black !important;
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+  @page {
+    size: var(--print-page-size, letter);
+    margin: var(--print-page-margin, 1.0in);
+  }
+}
+
+

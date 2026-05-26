@@ -1,3 +1,21 @@
+import { vi } from 'vitest';
+
+vi.mock('pdfjs-dist', () => {
+  return {
+    GlobalWorkerOptions: {
+      workerSrc: ''
+    },
+    getDocument: () => ({
+      promise: Promise.resolve({
+        numPages: 0,
+        getPage: () => Promise.resolve({
+          getTextContent: () => Promise.resolve({ items: [] })
+        })
+      })
+    })
+  };
+});
+
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 
@@ -18,6 +36,6 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, secretaria-workstation');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Secretaría Workstation');
   });
 });
