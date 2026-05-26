@@ -374,7 +374,51 @@ export class AgreementPreviewComponent {
 
   exportToWord(): void {
     const textToExport = this.activeTab() === 'editor' ? this.manualText : this.compiledMarkdownText();
-    const filename = `acuerdo-${this.puntoActa().toLowerCase().replace(/\s+/g, '-')}`;
+    
+    const parseDateToNumeric = (dateStr: string): string => {
+      if (!dateStr) return '';
+      const months: { [key: string]: string } = {
+        enero: '01', febrero: '02', marzo: '03', abril: '04', mayo: '05', junio: '06',
+        julio: '07', agosto: '08', septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
+      };
+      const clean = dateStr.toLowerCase().trim();
+      const match = clean.match(/^(\d{1,2})\s+de\s+([a-zñáéíóú]+)\s+de\s+(\d{4})/i);
+      if (match) {
+        const d = match[1].padStart(2, '0');
+        const m = months[match[2]];
+        const y = match[3];
+        if (m) return `${d}-${m}-${y}`;
+      }
+      const matchNum = clean.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4}|\d{2})/);
+      if (matchNum) {
+        const d = matchNum[1].padStart(2, '0');
+        const m = matchNum[2].padStart(2, '0');
+        let y = matchNum[3];
+        if (y.length === 2) y = '20' + y;
+        return `${d}-${m}-${y}`;
+      }
+      return dateStr;
+    };
+
+    const factList = this.facturas();
+    // Obtener nombres de empresas únicos
+    const companyNamesList = factList.map(f => f.establecimiento?.trim()).filter(Boolean);
+    const uniqueCompanyNames = Array.from(new Set(companyNamesList)).join(' ');
+    
+    // Obtener fechas únicas convertidas a formato numérico
+    const datesList = factList.map(f => parseDateToNumeric(f.fecha)).filter(Boolean);
+    const uniqueDates = Array.from(new Set(datesList)).join(' ');
+    
+    const baseCompany = uniqueCompanyNames || 'ACUERDO';
+    const baseDate = uniqueDates || 'SIN-FECHA';
+    
+    const suffix = this.certificar() ? ' CERTI' : '';
+    const filename = `${baseCompany} ${baseDate}${suffix}`
+      .toUpperCase()
+      .replace(/[\/\\?%*:|"<>\.]/g, '') // Eliminar caracteres prohibidos
+      .replace(/\s+/g, ' ') // Colapsar espacios múltiples
+      .trim();
+
     downloadAsDocx(
       filename, 
       textToExport, 
@@ -395,8 +439,61 @@ export class AgreementPreviewComponent {
     if (this.activeTab() === 'editor') {
       this.activeTab.set('preview');
     }
+
+    const parseDateToNumeric = (dateStr: string): string => {
+      if (!dateStr) return '';
+      const months: { [key: string]: string } = {
+        enero: '01', febrero: '02', marzo: '03', abril: '04', mayo: '05', junio: '06',
+        julio: '07', agosto: '08', septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
+      };
+      const clean = dateStr.toLowerCase().trim();
+      const match = clean.match(/^(\d{1,2})\s+de\s+([a-zñáéíóú]+)\s+de\s+(\d{4})/i);
+      if (match) {
+        const d = match[1].padStart(2, '0');
+        const m = months[match[2]];
+        const y = match[3];
+        if (m) return `${d}-${m}-${y}`;
+      }
+      const matchNum = clean.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4}|\d{2})/);
+      if (matchNum) {
+        const d = matchNum[1].padStart(2, '0');
+        const m = matchNum[2].padStart(2, '0');
+        let y = matchNum[3];
+        if (y.length === 2) y = '20' + y;
+        return `${d}-${m}-${y}`;
+      }
+      return dateStr;
+    };
+
+    const factList = this.facturas();
+    // Obtener nombres de empresas únicos
+    const companyNamesList = factList.map(f => f.establecimiento?.trim()).filter(Boolean);
+    const uniqueCompanyNames = Array.from(new Set(companyNamesList)).join(' ');
+    
+    // Obtener fechas únicas convertidas a formato numérico
+    const datesList = factList.map(f => parseDateToNumeric(f.fecha)).filter(Boolean);
+    const uniqueDates = Array.from(new Set(datesList)).join(' ');
+    
+    const baseCompany = uniqueCompanyNames || 'ACUERDO';
+    const baseDate = uniqueDates || 'SIN-FECHA';
+    
+    const suffix = this.certificar() ? ' CERTI' : '';
+    const cleanFilename = `${baseCompany} ${baseDate}${suffix}`
+      .toUpperCase()
+      .replace(/[\/\\?%*:|"<>\.]/g, '') // Eliminar caracteres prohibidos
+      .replace(/\s+/g, ' ') // Colapsar espacios múltiples
+      .trim();
+
+    // Guardar el título original de la página y asignar el nombre del archivo temporalmente para la impresión
+    const originalTitle = document.title;
+    document.title = cleanFilename;
+
     setTimeout(() => {
       window.print();
+      // Restaurar el título original después de que abra el diálogo
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 1000);
     }, 100);
   }
 }

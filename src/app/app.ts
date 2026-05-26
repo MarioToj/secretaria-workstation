@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { PdfParserService, Factura, ExtractionPatterns } from './services/pdf-parser.service';
 import { PdfUploaderComponent } from './components/pdf-uploader.component';
 import { ExtractionSettingsComponent } from './components/extraction-settings.component';
-import { InvoiceFormComponent } from './components/invoice-form.component';
 import { InvoiceListComponent } from './components/invoice-list.component';
 import { AgreementPreviewComponent } from './components/agreement-preview.component';
 import { getClosestPastWednesday, dateToSpanishWords, dateToSpanishCertDate } from './utils/number-to-words.util';
@@ -17,7 +16,6 @@ import { getClosestPastWednesday, dateToSpanishWords, dateToSpanishCertDate } fr
     FormsModule,
     PdfUploaderComponent,
     ExtractionSettingsComponent,
-    InvoiceFormComponent,
     InvoiceListComponent,
     AgreementPreviewComponent
   ],
@@ -123,9 +121,8 @@ export class App {
       }
 
       this.facturas.update(list => [...list, ...parsedInvoices]);
-      if (parsedInvoices.length > 0) {
-        this.selectedInvoiceId.set(parsedInvoices[parsedInvoices.length - 1].id);
-      }
+      // Por defecto, mantener colapsadas las facturas cargadas
+      this.selectedInvoiceId.set('');
     } catch (err: any) {
       this.errorMessage.set(err.message || 'Error al procesar los archivos PDF.');
     } finally {
@@ -140,7 +137,11 @@ export class App {
   }
 
   onInvoiceSelected(id: string): void {
-    this.selectedInvoiceId.set(id);
+    if (this.selectedInvoiceId() === id) {
+      this.selectedInvoiceId.set('');
+    } else {
+      this.selectedInvoiceId.set(id);
+    }
   }
 
   onInvoiceAdded(): void {

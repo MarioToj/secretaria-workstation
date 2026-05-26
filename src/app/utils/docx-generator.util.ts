@@ -134,17 +134,17 @@ export function downloadAsDocx(
     </html>
   `;
 
-  // Crear un blob de tipo aplicación de Word con codificación UTF-8
+  // Crear un blob de tipo aplicación de Word (.docx) con codificación UTF-8
   const blob = new Blob(['\ufeff' + documentTemplate], {
-    type: 'application/msword;charset=utf-8'
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8'
   });
 
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   
-  // Guardar como .doc ya que Word abre este formato de forma más directa
-  const cleanFilename = filename.endsWith('.doc') ? filename : filename + '.doc';
+  // Guardar como .docx para que sea totalmente compatible y moderno para MS Word
+  const cleanFilename = filename.endsWith('.docx') ? filename : filename + '.docx';
   link.download = cleanFilename;
   
   document.body.appendChild(link);
