@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Factura } from '../../services/pdf-parser.service';
 import { InvoiceFormComponent } from '../invoice-form/invoice-form.component';
@@ -11,6 +11,9 @@ import { InvoiceFormComponent } from '../invoice-form/invoice-form.component';
   styleUrl: './invoice-list.component.css'
 })
 export class InvoiceListComponent {
+  // Estado reactivo para dragover
+  protected readonly isDragOver = signal(false);
+
   // Inputs/Outputs
   readonly facturas = input<Factura[]>([]);
   readonly selectedId = input<string>('');
@@ -21,6 +24,35 @@ export class InvoiceListComponent {
   readonly invoiceUpdated = output<Factura>();
   readonly uploadPdfs = output<File[]>();
   readonly attachPdf = output<File>();
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver.set(true);
+  }
+
+  onDragLeave(): void {
+    this.isDragOver.set(false);
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver.set(false);
+
+    if (event.dataTransfer?.files) {
+      const pdfs: File[] = [];
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        const file = event.dataTransfer.files[i];
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+          pdfs.push(file);
+        }
+      }
+      if (pdfs.length > 0) {
+        this.uploadPdfs.emit(pdfs);
+      }
+    }
+  }
 
   onPdfsUploaded(files: FileList | null): void {
     if (files && files.length > 0) {

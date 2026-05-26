@@ -16,7 +16,8 @@ export async function downloadAsDocx(
   fontSizeCert: number = 12,
   fontSizeIncisos: number = 12,
   fontSizeFirmas: number = 12,
-  fontSizeCierreCert: number = 12
+  fontSizeCierreCert: number = 12,
+  lineSpacing: number = 1.0
 ): Promise<void> {
   // Asegurar compatibilidad de la variable 'global' en el navegador para la librería @turbodocx/html-to-docx
   if (typeof window !== 'undefined' && !(window as any).global) {
@@ -48,7 +49,8 @@ export async function downloadAsDocx(
     fontSizeGeneral,
     fontSizeCert,
     fontSizeIncisos,
-    fontSizeCierreCert
+    fontSizeCierreCert,
+    lineSpacing
   );
 
   if (tablePart) {
@@ -94,7 +96,7 @@ export async function downloadAsDocx(
           font-family: ${fontStack};
           font-size: ${fontSizeGeneral}pt;
           color: #000000;
-          line-height: 1.15;
+          line-height: ${lineSpacing};
         }
         p.MsoNormal {
           margin: 0in;
@@ -112,9 +114,7 @@ export async function downloadAsDocx(
         }
       </style>
     </head>
-    <body>
-      ${paragraphs}
-    </body>
+    <body>${paragraphs}</body>
     </html>
   `;
 
@@ -143,8 +143,13 @@ export async function downloadAsDocx(
   const module = await import('./html-to-docx-browser.js');
   const HTMLtoDOCX = module.default;
 
+  const cleanTemplateHTML = documentTemplateHTML
+    .replace(/\r?\n/g, '')
+    .replace(/>\s+</g, '><')
+    .trim();
+
   // Convertir HTML a un Blob de DOCX nativo compatible con Word Online
-  HTMLtoDOCX(documentTemplateHTML, null, documentOptions)
+  HTMLtoDOCX(cleanTemplateHTML, null, documentOptions)
     .then((docxContent: any) => {
       const blob = docxContent instanceof Blob 
         ? docxContent 
@@ -188,7 +193,8 @@ export function downloadAsDoc(
   fontSizeCert: number = 12,
   fontSizeIncisos: number = 12,
   fontSizeFirmas: number = 12,
-  fontSizeCierreCert: number = 12
+  fontSizeCierreCert: number = 12,
+  lineSpacing: number = 1.0
 ): void {
   const fontStack = fontFamily === 'Arial Narrow' 
     ? "'Arial Narrow', Arial, sans-serif" 
@@ -211,7 +217,8 @@ export function downloadAsDoc(
     fontSizeGeneral,
     fontSizeCert,
     fontSizeIncisos,
-    fontSizeCierreCert
+    fontSizeCierreCert,
+    lineSpacing
   );
 
   if (tablePart) {
@@ -266,7 +273,7 @@ export function downloadAsDoc(
           font-family: ${fontStack};
           font-size: ${fontSizeGeneral}pt;
           color: #000000;
-          line-height: 1.15;
+          line-height: ${lineSpacing};
         }
         p.MsoNormal {
           margin: 0in;
@@ -284,13 +291,16 @@ export function downloadAsDoc(
         }
       </style>
     </head>
-    <body>
-      ${paragraphs}
-    </body>
+    <body>${paragraphs}</body>
     </html>
   `;
 
-  const blob = new Blob(['\ufeff' + documentTemplate], {
+  const cleanTemplate = documentTemplate
+    .replace(/\r?\n/g, '')
+    .replace(/>\s+</g, '><')
+    .trim();
+
+  const blob = new Blob(['\ufeff' + cleanTemplate], {
     type: 'application/msword;charset=utf-8'
   });
 
@@ -313,7 +323,8 @@ function parseContentToHtml(
   fontSizeGeneral: number,
   fontSizeCert: number,
   fontSizeIncisos: number,
-  fontSizeCierreCert: number
+  fontSizeCierreCert: number,
+  lineSpacing: number
 ): string {
   const lines = htmlContent
     .split(/<br\s*\/?>/i)
@@ -334,7 +345,7 @@ function parseContentToHtml(
         inList = false;
       }
       hasReachedAcuerda = true;
-      resultHtml += `<p class="MsoNormal" style="text-align:center;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${fontSizeGeneral}pt;font-family:${fontStack};"><strong>ACUERDA:</strong></p>`;
+      resultHtml += `<p class="MsoNormal" style="text-align:center;line-height:${lineSpacing * 100}%;margin-top:0pt;margin-bottom:0pt;font-size:${fontSizeGeneral}pt;font-family:${fontStack};"><strong>ACUERDA:</strong></p>`;
       continue;
     }
 
@@ -349,10 +360,10 @@ function parseContentToHtml(
       
       if (!inList) {
         // Especificar list-style-type: upper-roman en el estilo para forzar el tipo romano nativo de Word
-        resultHtml += `<ol style="list-style-type:upper-roman;margin-top:0pt;margin-bottom:0pt;padding-left:0.5in;font-family:${fontStack};font-size:${fontSizeIncisos}pt;line-height:115%;">`;
+        resultHtml += `<ol style="list-style-type:upper-roman;margin-top:0pt;margin-bottom:0pt;padding-left:0.5in;font-family:${fontStack};font-size:${fontSizeIncisos}pt;line-height:${lineSpacing * 100}%;">`;
         inList = true;
       }
-      resultHtml += `<li style="text-align:justify;font-family:${fontStack};font-size:${fontSizeIncisos}pt;margin-bottom:0pt;line-height:115%;">${content}</li>`;
+      resultHtml += `<li style="text-align:justify;font-family:${fontStack};font-size:${fontSizeIncisos}pt;margin-bottom:0pt;line-height:${lineSpacing * 100}%;">${content}</li>`;
     } else {
       if (inList) {
         resultHtml += '</ol>';
@@ -365,7 +376,7 @@ function parseContentToHtml(
       }
 
       const size = isCierre ? fontSizeCierreCert : isCert ? fontSizeCert : fontSizeGeneral;
-      resultHtml += `<p class="MsoNormal" style="text-align:justify;line-height:115%;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${line}</p>`;
+      resultHtml += `<p class="MsoNormal" style="text-align:justify;line-height:${lineSpacing * 100}%;margin-top:0pt;margin-bottom:0pt;font-size:${size}pt;font-family:${fontStack};">${line}</p>`;
     }
   }
 

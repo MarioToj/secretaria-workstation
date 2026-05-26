@@ -68,6 +68,8 @@ export class App {
   readonly fontSizeFirmas = signal<number>(this.loadNumFromStorage('fontSizeFirmas', 12));
   readonly cierreCertificacionText = signal<string>('…No habiendo más… Damos fe: (fs.). —Ilegible. Mateo Velásquez Ralios. Alcalde Municipal. — (fs) Ilegibles Concejo Municipal. CERTIFICO: (f) Ilegible. Karen Raquél Gómez López. Secretaria Municipal. – Se ven dos sellos.');
   readonly fontSizeCierreCert = signal<number>(this.loadNumFromStorage('fontSizeCierreCert', 12));
+  readonly espacioFirmas = signal<number>(this.loadNumFromStorage('espacioFirmas', 4));
+  readonly lineSpacing = signal<number>(this.loadNumFromStorage('lineSpacing', 1.0));
   private isCierreCustomized = false;
 
   // Factura seleccionada activa
@@ -160,6 +162,7 @@ export class App {
       dueno: '',
       tratamientoDueno: 'del señor',
       solicitantes: '',
+      prefijoSolicitantes: 'de',
       productos: [{ cantidad: 1, descripcion: 'Nuevo Producto', precioUnitario: 0, genero: 'masculino' }],
       total: 0,
       totalEnLetras: 'CERO QUETZALES EXACTOS',
@@ -229,6 +232,8 @@ export class App {
         localStorage.setItem('invoice_app_fontSizeIncisos', this.fontSizeIncisos().toString());
         localStorage.setItem('invoice_app_fontSizeFirmas', this.fontSizeFirmas().toString());
         localStorage.setItem('invoice_app_fontSizeCierreCert', this.fontSizeCierreCert().toString());
+        localStorage.setItem('invoice_app_espacioFirmas', this.espacioFirmas().toString());
+        localStorage.setItem('invoice_app_lineSpacing', this.lineSpacing().toString());
       }
     });
 

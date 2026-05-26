@@ -39,6 +39,10 @@ export class AgreementPreviewComponent {
   readonly fontSizeFirmas = input<number>(12);
   readonly cierreCertificacionText = input<string>('…No habiendo más… Damos fe: (fs.). —Ilegible. Mateo Velásquez Ralios. Alcalde Municipal. — (fs) Ilegibles Concejo Municipal. CERTIFICO: (f) Ilegible. Karen Raquél Gómez López. Secretaria Municipal. – Se ven dos sellos.');
   readonly fontSizeCierreCert = input<number>(12);
+  readonly espacioFirmas = input<number>(4);
+  readonly lineSpacing = input<number>(1.0);
+
+  protected readonly espacioFirmasBr = computed(() => '<br/>'.repeat(this.espacioFirmas()));
 
   protected readonly fontStack = computed(() => {
     const font = this.fontFamily();
@@ -46,13 +50,13 @@ export class AgreementPreviewComponent {
   });
 
   // Configuración de página mediante Signals
-  protected readonly selectedPageSize = signal<'letter' | 'legal' | 'a4' | 'foolscap'>('letter');
+  protected readonly selectedPageSize = signal<'letter' | 'legal' | 'a4' | 'foolscap'>('foolscap');
   
-  // Márgenes numéricos individuales en pulgadas
-  protected readonly marginTop = signal<number>(1.0);
-  protected readonly marginBottom = signal<number>(1.0);
-  protected readonly marginLeft = signal<number>(1.0);
-  protected readonly marginRight = signal<number>(1.0);
+  // Márgenes numéricos individuales en centímetros (cm)
+  protected readonly marginTop = signal<number>(5.5); // Margen superior por defecto de 5.5 cm
+  protected readonly marginBottom = signal<number>(2.0);  // 2 cm
+  protected readonly marginLeft = signal<number>(2.0);    // 2 cm
+  protected readonly marginRight = signal<number>(2.0);   // 2 cm
 
   // Estado local para alternar pestañas
   protected readonly activeTab = signal<'preview' | 'editor'>('preview');
@@ -75,12 +79,27 @@ export class AgreementPreviewComponent {
 
       // Mapear tamaño
       const sizePrint = size === 'letter' ? 'letter' : size === 'legal' ? '8.5in 14.0in' : size === 'foolscap' ? '8.5in 13.0in' : 'A4';
-      const marginPrint = `${t}in ${r}in ${b}in ${l}in`;
+      const marginPrint = `${t}cm ${r}cm ${b}cm ${l}cm`;
 
       // Aplicar al elemento raíz del documento
       document.documentElement.style.setProperty('--print-page-size', sizePrint);
       document.documentElement.style.setProperty('--print-page-margin', marginPrint);
     });
+  }
+
+  protected onPageSizeChange(size: 'letter' | 'legal' | 'a4' | 'foolscap'): void {
+    this.selectedPageSize.set(size);
+    if (size === 'foolscap' || size === 'letter') {
+      this.marginTop.set(5.5);
+      this.marginBottom.set(2.0);
+      this.marginLeft.set(2.0);
+      this.marginRight.set(2.0);
+    } else {
+      this.marginTop.set(2.54);
+      this.marginBottom.set(2.54);
+      this.marginLeft.set(2.54);
+      this.marginRight.set(2.54);
+    }
   }
 
   // Generar la versión en Markdown del texto para el editor y la descarga
@@ -108,7 +127,7 @@ export class AgreementPreviewComponent {
       const totalNum = fact.total.toLocaleString('en-US', { minimumFractionDigits: 2 });
       const duenoPart = (fact.dueno && fact.dueno !== 'PROPIETARIO NO ENCONTRADO') ? ` propiedad ${fact.tratamientoDueno} **${fact.dueno}**` : '';
 
-      text += `**${roman}**. Aprobar el pago de la factura serie **${fact.serie}** Número de DTE **${fact.dte}**, de fecha **${fact.fecha}**, a **${fact.establecimiento}**, con dirección en **${fact.direccion}**${duenoPart}, por un valor de: **${totalWords}** (**Q.${totalNum}**), en concepto de pago de: ${prodTexts}${fact.solicitantes ? `, a solicitud de ${fact.solicitantes}` : ''}.\n\n`;
+      text += `**${roman}**. Aprobar el pago de la factura serie **${fact.serie}** Número de DTE **${fact.dte}**, de fecha **${fact.fecha}**, a **${fact.establecimiento}**, con dirección en **${fact.direccion}**${duenoPart}, por un valor de: **${totalWords}** (**Q.${totalNum}**), en concepto de pago de: ${prodTexts}${fact.solicitantes ? `, a solicitud ${(fact.prefijoSolicitantes === 'los' || fact.prefijoSolicitantes === 'las') ? 'de ' + fact.prefijoSolicitantes : (fact.prefijoSolicitantes || 'de')} ${fact.solicitantes}` : ''}.\n\n`;
     });
 
     const cierreRoman = this.getRomanNumeral(facts.length + 1);
@@ -129,7 +148,7 @@ export class AgreementPreviewComponent {
     
     const certFooter = `${this.cierreCertificacionText()}\n\n**Y, PARA REMITIR A DONDE CORRESPONDA, COMPULSO LA PRESENTE CERTIFICACIÓN, DEBIDAMENTE CONFRONTADA CON SU ORIGINAL, LA QUE SELLO Y FIRMO, EN LA VILLA DE JOYABAJ, DEPARTAMENTO DE QUICHÉ, A ${fCert}.**`;
     
-    const firmasTable = `<table border="0" style="width: 100%; table-layout: fixed; border: none; border-collapse: collapse; margin-top: 16pt;"><tr><td style="width: 2.9in; border: none; padding: 0; vertical-align: top;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: 115%;"><br/><br/><br/><br/><strong>${secr}</strong><br/>Secretaria Municipal</p></td><td style="width: 0.7in; border: none; padding: 0;">&nbsp;</td><td style="width: 2.9in; border: none; padding: 0; vertical-align: top;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: 115%;"><br/><br/><br/><br/>Vo. Bo. &nbsp; <strong>${alc}</strong><br/>Alcalde Municipal</p></td></tr></table>`;
+    const firmasTable = `<table border="0" style="width: 100%; table-layout: fixed; border: none; border-collapse: collapse; margin-top: 16pt;"><tr><td style="width: 2.9in; border: none; padding: 0; vertical-align: top;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: ${this.lineSpacing() * 100}%;">${this.espacioFirmasBr()}<strong>${secr}</strong><br/>Secretaria Municipal</p></td><td style="width: 0.7in; border: none; padding: 0;">&nbsp;</td><td style="width: 2.9in; border: none; padding: 0; vertical-align: top;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: ${this.lineSpacing() * 100}%;">${this.espacioFirmasBr()}Vo. Bo. &nbsp; <strong>${alc}</strong><br/>Alcalde Municipal</p></td></tr></table>`;
 
     return `${certHeader}\n\n${text}\n\n${certFooter}\n\n${firmasTable}`;
   });
@@ -160,7 +179,7 @@ export class AgreementPreviewComponent {
 
   // --- Dimensiones visuales dinámicas ---
   getPreviewPadding(): string {
-    return `${this.marginTop()}in ${this.marginRight()}in ${this.marginBottom()}in ${this.marginLeft()}in`;
+    return `${this.marginTop()}cm ${this.marginRight()}cm ${this.marginBottom()}cm ${this.marginLeft()}cm`;
   }
 
   getPreviewAspectRatio(): string {
@@ -220,37 +239,44 @@ export class AgreementPreviewComponent {
       .replace(/\s+/g, ' ') // Colapsar espacios múltiples
       .trim();
 
+    const tIn = this.marginTop() / 2.54;
+    const rIn = this.marginRight() / 2.54;
+    const bIn = this.marginBottom() / 2.54;
+    const lIn = this.marginLeft() / 2.54;
+
     if (format === 'docx') {
       downloadAsDocx(
         filename, 
         textToExport, 
         this.selectedPageSize(), 
-        this.marginTop(), 
-        this.marginRight(), 
-        this.marginBottom(), 
-        this.marginLeft(),
+        tIn, 
+        rIn, 
+        bIn, 
+        lIn,
         this.fontFamily(),
         this.fontSizeGeneral(),
         this.fontSizeCert(),
         this.fontSizeIncisos(),
         this.fontSizeFirmas(),
-        this.fontSizeCierreCert()
+        this.fontSizeCierreCert(),
+        this.lineSpacing()
       );
     } else {
       downloadAsDoc(
         filename, 
         textToExport, 
         this.selectedPageSize(), 
-        this.marginTop(), 
-        this.marginRight(), 
-        this.marginBottom(), 
-        this.marginLeft(),
+        tIn, 
+        rIn, 
+        bIn, 
+        lIn,
         this.fontFamily(),
         this.fontSizeGeneral(),
         this.fontSizeCert(),
         this.fontSizeIncisos(),
         this.fontSizeFirmas(),
-        this.fontSizeCierreCert()
+        this.fontSizeCierreCert(),
+        this.lineSpacing()
       );
     }
   }

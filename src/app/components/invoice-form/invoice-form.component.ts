@@ -34,6 +34,7 @@ export class InvoiceFormComponent {
       dueno: ['', Validators.required],
       tratamientoDueno: ['del señor', Validators.required],
       solicitantes: [''],
+      prefijoSolicitantes: ['de', Validators.required],
       productos: this.fb.array([])
     });
 
@@ -67,7 +68,8 @@ export class InvoiceFormComponent {
       direccion: fact.direccion,
       dueno: fact.dueno,
       tratamientoDueno: fact.tratamientoDueno,
-      solicitantes: fact.solicitantes
+      solicitantes: fact.solicitantes,
+      prefijoSolicitantes: fact.prefijoSolicitantes || 'de'
     }, { emitEvent: false });
 
     // Limpiar FormArray de productos
@@ -125,6 +127,7 @@ export class InvoiceFormComponent {
       dueno: formValue.dueno || '',
       tratamientoDueno: formValue.tratamientoDueno || 'del señor',
       solicitantes: formValue.solicitantes || '',
+      prefijoSolicitantes: formValue.prefijoSolicitantes || 'de',
       productos: prods,
       total,
       totalEnLetras,

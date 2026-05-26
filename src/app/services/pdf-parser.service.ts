@@ -40,6 +40,7 @@ export interface Factura {
   dueno: string;
   tratamientoDueno: 'del señor' | 'de la señora' | 'de';
   solicitantes: string;
+  prefijoSolicitantes: 'de' | 'del' | 'de la' | 'los' | 'las';
   productos: Producto[];
   total: number;
   totalEnLetras: string;
@@ -163,6 +164,7 @@ export class PdfParserService {
       dueno: dueno || 'PROPIETARIO NO ENCONTRADO',
       tratamientoDueno,
       solicitantes: '',
+      prefijoSolicitantes: 'de',
       productos,
       total,
       totalEnLetras,
