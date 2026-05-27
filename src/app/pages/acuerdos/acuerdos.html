@@ -1,0 +1,375 @@
+<div class="w-full h-full flex-1 flex flex-col items-center justify-center relative print:block">
+  <!-- Spinner de Carga Global (Ocupa toda la pantalla si se está procesando algo) -->
+  @if (loading()) {
+    <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/60 backdrop-blur-sm print:hidden">
+      <div class="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+      <p class="text-sm font-semibold text-indigo-400 animate-pulse mt-4">Procesando factura y extrayendo textos...</p>
+    </div>
+  }
+
+  <!-- Banner de Error Global (Dismissible) -->
+  @if (errorMessage()) {
+    <div class="w-full max-w-4xl mb-4 p-4 bg-red-950/40 border border-red-800/80 text-red-300 rounded-2xl flex gap-3 text-sm items-start justify-between print:hidden shrink-0">
+      <div class="flex gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 shrink-0 text-red-400">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 1 1 1.05 1.05l-.04.04-.044-.02a.75.75 0 0 1-1.012-1.05Zm-4.5 13.5h15c.621 0 1.125-.504 1.125-1.125V3.375c0-.621-.504-1.125-1.125-1.125h-15C6.004 2.25 5.5 2.754 5.5 3.375v17.25c0 .621.504 1.125 1.125 1.125ZM12 9v1.5M12 15h.008v.008H12V15Z" />
+        </svg>
+        <div>
+          <p class="font-bold">Error de Procesamiento</p>
+          <p class="mt-0.5 text-xs text-red-400/90">{{ errorMessage() }}</p>
+        </div>
+      </div>
+      <button (click)="errorMessage.set('')" class="text-red-400 hover:text-red-200 text-xs font-bold px-2 py-1 hover:bg-red-500/10 rounded-lg">
+        Cerrar
+      </button>
+    </div>
+  }
+
+  <!-- PANTALLA INICIAL: CARGA DE ARCHIVOS -->
+  @if (facturas().length === 0) {
+    <div class="w-full max-w-4xl flex flex-col items-center gap-6 print:hidden py-12">
+      <!-- Uploader -->
+      <app-pdf-uploader (filesSelected)="onFilesSelected($event)"></app-pdf-uploader>
+
+      <!-- Separador u Opción Manual -->
+      <div class="flex items-center gap-4 w-full max-w-md my-2">
+        <hr class="flex-1 border-slate-800" />
+        <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">O</span>
+        <hr class="flex-1 border-slate-800" />
+      </div>
+
+      <button 
+        type="button"
+        (click)="onInvoiceAdded()"
+        class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-indigo-400 hover:text-indigo-300 font-semibold border border-slate-800 hover:border-slate-700 rounded-xl text-sm transition-all shadow-md active:scale-[0.98]"
+      >
+        Crear Factura Manualmente (En blanco)
+      </button>
+    </div>
+  }
+
+  <!-- PANTALLA PRINCIPAL: SPLIT SCREEN (EDICIÓN Y ACUERDO) -->
+  @if (facturas().length > 0) {
+    <div class="w-full h-auto xl:h-full grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch min-h-0 print:block print:p-0">
+      
+      <!-- Columna Izquierda: Edición y Listas (Ocultar en impresión) -->
+      <div class="xl:col-span-5 flex flex-col gap-6 min-h-0 print:hidden select-text xl:overflow-y-auto xl:pr-2 xl:h-full pb-6">
+        
+        <!-- Acciones Rápidas del Encabezado en el Panel -->
+        <div class="flex items-center justify-between bg-slate-900 border border-slate-800/80 rounded-2xl p-3 shrink-0">
+          <span class="text-xs font-semibold text-slate-400">Acciones del Generador</span>
+          <button 
+            (click)="resetAll()"
+            class="px-3 py-1.5 bg-slate-950/40 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-red-400 hover:text-red-300 transition-all"
+          >
+            Limpiar Todo
+          </button>
+        </div>
+
+        <!-- Lista de facturas consolidadas con editor inline -->
+        <app-invoice-list 
+          [facturas]="facturas()" 
+          [selectedId]="selectedInvoiceId()"
+          (invoiceSelected)="onInvoiceSelected($event)"
+          (invoiceAdded)="onInvoiceAdded()"
+          (invoiceDeleted)="onInvoiceDeleted($event)"
+          (invoiceUpdated)="onInvoiceUpdated($event)"
+          (uploadPdfs)="onFilesSelected($event)"
+          (attachPdf)="onAttachPdfToActive($event)"
+        ></app-invoice-list>
+
+        <!-- Datos Generales del Acuerdo Municipal -->
+        <div 
+          (click)="selectedInvoiceId.set('')"
+          class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-2xl flex flex-col gap-3 shrink-0"
+        >
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <h3 class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Ajustes del Acuerdo</h3>
+            <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+              <span class="text-[10px] font-bold text-slate-400 uppercase">Certificar:</span>
+              <div class="relative">
+                <input 
+                  type="checkbox" 
+                  [ngModel]="certificar()" 
+                  (ngModelChange)="certificar.set($event)"
+                  class="sr-only peer"
+                />
+                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-slate-400 peer-checked:after:bg-indigo-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600/30 peer-checked:border-indigo-500 border border-slate-700"></div>
+              </div>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-[10px] font-bold text-slate-400">Punto de Acta / Resolución</label>
+              <input 
+                type="text" 
+                [(ngModel)]="puntoActa" 
+                placeholder="Ej: DÉCIMO NOVENO"
+                class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all font-bold"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-[10px] font-bold text-slate-400">Encabezado Resolutivo</label>
+              <textarea 
+                [(ngModel)]="encabezado" 
+                rows="2"
+                class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all resize-y leading-relaxed"
+              ></textarea>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-[10px] font-bold text-slate-400">Cierre de Resolución</label>
+              <textarea 
+                [(ngModel)]="cierre" 
+                rows="2"
+                class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all resize-y leading-relaxed"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Configuración de Tipografía y Tamaños -->
+          <div class="border-t border-slate-800/80 pt-3 mt-1 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Tipografía y Tamaños (pt)</h4>
+              <button 
+                (click)="showSettings.set(!showSettings())"
+                class="flex items-center gap-1 text-[9px] font-bold text-slate-400 hover:text-indigo-400 transition-all uppercase"
+                title="Configurar patrones Regex"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor" class="w-3.5 h-3.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827a1.125 1.125 0 0 1 .26 1.43l-1.297 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.645-.869L9.594 3.94ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" />
+                </svg>
+                Configurar Regex
+              </button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+              <div class="col-span-2 flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-slate-500">Fuente del Documento</label>
+                <select 
+                  [ngModel]="fontFamily()"
+                  (ngModelChange)="fontFamily.set($event)"
+                  class="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:border-indigo-500 outline-none transition-all font-semibold"
+                >
+                  <option value="Arial">Arial</option>
+                  <option value="Arial Narrow">Arial Narrow</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Calibri">Calibri</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Courier New">Courier New</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-slate-500">Gral / Resolución</label>
+                <input 
+                  type="number" 
+                  [ngModel]="fontSizeGeneral()"
+                  (ngModelChange)="fontSizeGeneral.set($event)"
+                  min="8" max="24"
+                  class="w-full px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs text-center focus:border-indigo-500 outline-none font-mono"
+                />
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-slate-500">Incisos / Facturas</label>
+                <input 
+                  type="number" 
+                  [ngModel]="fontSizeIncisos()"
+                  (ngModelChange)="fontSizeIncisos.set($event)"
+                  min="8" max="24"
+                  class="w-full px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs text-center focus:border-indigo-500 outline-none font-mono"
+                />
+              </div>
+
+              <div class="col-span-2 flex flex-col gap-1.5 mt-1">
+                <div class="flex justify-between items-center text-[9px] font-bold text-slate-500">
+                  <span>Interlineado (Espaciado)</span>
+                  <span class="text-indigo-400 font-mono">{{ lineSpacing().toFixed(2) }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="range" 
+                    [ngModel]="lineSpacing()"
+                    (ngModelChange)="lineSpacing.set($event)"
+                    min="1.0" max="2.0" step="0.05"
+                    class="flex-1 accent-indigo-500 h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer border border-slate-800"
+                  />
+                  <input 
+                    type="number" 
+                    [ngModel]="lineSpacing()"
+                    (ngModelChange)="lineSpacing.set($event)"
+                    min="1.0" max="2.0" step="0.05"
+                    class="w-12 px-1 py-0.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-[10px] text-center focus:border-indigo-500 outline-none font-mono"
+                  />
+                </div>
+              </div>
+
+              @if (certificar()) {
+                <div class="flex flex-col gap-1">
+                  <label class="text-[9px] font-bold text-slate-500">Cert. Encabezado</label>
+                  <input 
+                    type="number" 
+                    [ngModel]="fontSizeCert()"
+                    (ngModelChange)="fontSizeCert.set($event)"
+                    min="8" max="24"
+                    class="w-full px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs text-center focus:border-indigo-500 outline-none font-mono"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label class="text-[9px] font-bold text-slate-500">Cert. Cierre</label>
+                  <input 
+                    type="number" 
+                    [ngModel]="fontSizeCierreCert()"
+                    (ngModelChange)="fontSizeCierreCert.set($event)"
+                    min="8" max="24"
+                    class="w-full px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs text-center focus:border-indigo-500 outline-none font-mono"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label class="text-[9px] font-bold text-slate-500">Firmas / Sellos (pt)</label>
+                  <input 
+                    type="number" 
+                    [ngModel]="fontSizeFirmas()"
+                    (ngModelChange)="fontSizeFirmas.set($event)"
+                    min="8" max="24"
+                    class="w-full px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs text-center focus:border-indigo-500 outline-none font-mono"
+                  />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label class="text-[9px] font-bold text-slate-500">Espacio Firmas (líneas)</label>
+                  <input 
+                    type="number" 
+                    [ngModel]="espacioFirmas()"
+                    (ngModelChange)="espacioFirmas.set($event)"
+                    min="1" max="15"
+                    class="w-full px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs text-center focus:border-indigo-500 outline-none font-mono"
+                  />
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Panel Adicional si Certificar está activo -->
+          @if (certificar()) {
+            <div class="grid grid-cols-2 gap-2 border-t border-slate-800/80 pt-3 mt-1">
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-slate-400">Tipo de Sesión</label>
+                <select 
+                  [ngModel]="tipoSesion()"
+                  (ngModelChange)="tipoSesion.set($event)"
+                  class="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:border-indigo-500 outline-none transition-all"
+                >
+                  <option value="Ordinaria">Ordinaria</option>
+                  <option value="Extraordinaria">Extraordinaria</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-slate-400">Número de Acta</label>
+                <input 
+                  type="text" 
+                  [ngModel]="numeroActa()"
+                  (ngModelChange)="numeroActa.set($event)"
+                  class="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:border-indigo-500 outline-none transition-all font-mono"
+                />
+              </div>
+              <div class="col-span-2 flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-slate-400">Fecha de Sesión (en letras)</label>
+                <input 
+                  type="text" 
+                  [ngModel]="fechaSesion()"
+                  (ngModelChange)="fechaSesion.set($event)"
+                  class="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:border-indigo-500 outline-none transition-all"
+                  placeholder="diecinueve de marzo del año dos mil veinticinco"
+                />
+              </div>
+              <div class="col-span-2 flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-slate-400">Fecha de Certificación (en letras)</label>
+                <input 
+                  type="text" 
+                  [ngModel]="fechaCertificacion()"
+                  (ngModelChange)="fechaCertificacion.set($event)"
+                  class="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:border-indigo-500 outline-none transition-all"
+                  placeholder="VEINTICUATRO DÍAS DEL MES DE MARZO DEL AÑO DOS MIL VEINTICINCO"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-slate-400">Secretaria Municipal</label>
+                <input 
+                  type="text" 
+                  [ngModel]="nombreSecretaria()"
+                  (ngModelChange)="nombreSecretaria.set($event)"
+                  class="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:border-indigo-500 outline-none transition-all"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-slate-400">Alcalde Municipal</label>
+                <input 
+                  type="text" 
+                  [ngModel]="nombreAlcalde()"
+                  (ngModelChange)="nombreAlcalde.set($event)"
+                  class="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:border-indigo-500 outline-none transition-all"
+                />
+              </div>
+              <div class="col-span-2 flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-slate-400">Párrafo Cierre Certificación</label>
+                <textarea 
+                  [ngModel]="cierreCertificacionText()" 
+                  (ngModelChange)="onCierreCertTextChange($event)"
+                  rows="3"
+                  class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all resize-y leading-relaxed font-sans"
+                ></textarea>
+              </div>
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- Columna Derecha: Vista Previa en Vivo -->
+      <div class="xl:col-span-7 min-h-0 print:block print:w-full print:static">
+        <app-agreement-preview
+          [facturas]="facturas()"
+          [puntoActa]="puntoActa()"
+          [encabezado]="encabezado()"
+          [cierre]="cierre()"
+          [certificar]="certificar()"
+          [nombreSecretaria]="nombreSecretaria()"
+          [nombreAlcalde]="nombreAlcalde()"
+          [tipoSesion]="tipoSesion()"
+          [numeroActa]="numeroActa()"
+          [fechaSesion]="fechaSesion()"
+          [fechaCertificacion]="fechaCertificacion()"
+          [fontFamily]="fontFamily()"
+          [fontSizeGeneral]="fontSizeGeneral()"
+          [fontSizeCert]="fontSizeCert()"
+          [fontSizeIncisos]="fontSizeIncisos()"
+          [fontSizeFirmas]="fontSizeFirmas()"
+          [cierreCertificacionText]="cierreCertificacionText()"
+          [fontSizeCierreCert]="fontSizeCierreCert()"
+          [espacioFirmas]="espacioFirmas()"
+          [lineSpacing]="lineSpacing()"
+          class="h-full block min-h-0"
+        ></app-agreement-preview>
+      </div>
+
+    </div>
+  }
+
+  <!-- MODAL DE AJUSTES REGEX (Ocultar al imprimir) -->
+  @if (showSettings()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm print:hidden">
+      <div class="w-full max-w-5xl h-[85vh] transition-all">
+        <app-extraction-settings
+          [rawText]="rawText()"
+          [patterns]="patterns()"
+          (patternsChange)="onPatternsChanged($event)"
+          (close)="showSettings.set(false)"
+        ></app-extraction-settings>
+      </div>
+    </div>
+  }
+</div>
