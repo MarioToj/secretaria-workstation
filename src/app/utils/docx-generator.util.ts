@@ -12,11 +12,11 @@ export async function downloadAsDocx(
   marginBottom: number = 1.0,
   marginLeft: number = 1.0,
   fontFamily: string = 'Arial',
-  fontSizeGeneral: number = 12,
-  fontSizeCert: number = 12,
-  fontSizeIncisos: number = 12,
-  fontSizeFirmas: number = 12,
-  fontSizeCierreCert: number = 12,
+  fontSizeGeneral: number = 11,
+  fontSizeCert: number = 11,
+  fontSizeIncisos: number = 11,
+  fontSizeFirmas: number = 11,
+  fontSizeCierreCert: number = 11,
   lineSpacing: number = 1.0
 ): Promise<void> {
   // Asegurar compatibilidad de la variable 'global' en el navegador para la librería @turbodocx/html-to-docx
@@ -29,8 +29,11 @@ export async function downloadAsDocx(
     ? "'Arial Narrow', Arial, sans-serif" 
     : fontFamily;
 
+  // Eliminar espacios y saltos de línea al principio y final
+  const cleanContentText = contentText.trim();
+
   // Convertir marcas de negrita Markdown **texto** a <strong>texto</strong>
-  let htmlContent = contentText
+  let htmlContent = cleanContentText
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Negritas
     .replace(/\n/g, '<br/>'); // Saltos de línea
 
@@ -87,7 +90,6 @@ export async function downloadAsDocx(
 
   // Plantilla HTML compatible con MS Word con dimensiones dinámicas
   const documentTemplateHTML = `
-    <!DOCTYPE html>
     <html lang="es">
     <head>
       <meta charset="utf-8">
@@ -122,6 +124,25 @@ export async function downloadAsDocx(
           mso-fareast-language: ES-GT;
           mso-bidi-language: ES-GT;
         }
+        table {
+          border: none;
+          border-width: 0px;
+          border-style: none;
+          border-collapse: collapse;
+          mso-border-alt: none;
+          mso-border-insideh: none;
+          mso-border-insidev: none;
+        }
+        td, tr {
+          border: none;
+          border-width: 0px;
+          border-style: none;
+          mso-border-alt: none;
+          mso-border-left-alt: none;
+          mso-border-top-alt: none;
+          mso-border-bottom-alt: none;
+          mso-border-right-alt: none;
+        }
       </style>
     </head>
     <body>${paragraphs}</body>
@@ -146,7 +167,14 @@ export async function downloadAsDocx(
     },
     font: fontFamily,
     fontSize: fontSizeIncisos * 2,
-    lang: 'es-GT'
+    lang: 'es-GT',
+    table: {
+      borderOptions: {
+        size: 1,
+        stroke: 'none',
+        color: 'transparent'
+      }
+    }
   };
 
   // Cargar de forma dinámica la versión local adaptada para navegador de la librería html-to-docx
@@ -200,18 +228,21 @@ export function downloadAsDoc(
   marginBottom: number = 1.0,
   marginLeft: number = 1.0,
   fontFamily: string = 'Arial',
-  fontSizeGeneral: number = 12,
-  fontSizeCert: number = 12,
-  fontSizeIncisos: number = 12,
-  fontSizeFirmas: number = 12,
-  fontSizeCierreCert: number = 12,
+  fontSizeGeneral: number = 11,
+  fontSizeCert: number = 11,
+  fontSizeIncisos: number = 11,
+  fontSizeFirmas: number = 11,
+  fontSizeCierreCert: number = 11,
   lineSpacing: number = 1.0
 ): void {
   const fontStack = fontFamily === 'Arial Narrow' 
     ? "'Arial Narrow', Arial, sans-serif" 
     : fontFamily;
 
-  let htmlContent = contentText
+  // Eliminar espacios y saltos de línea al principio y final
+  const cleanContentText = contentText.trim();
+
+  let htmlContent = cleanContentText
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\n/g, '<br/>');
 
@@ -310,6 +341,25 @@ export function downloadAsDoc(
           mso-ansi-language: ES-GT;
           mso-fareast-language: ES-GT;
           mso-bidi-language: ES-GT;
+        }
+        table {
+          border: none;
+          border-width: 0px;
+          border-style: none;
+          border-collapse: collapse;
+          mso-border-alt: none;
+          mso-border-insideh: none;
+          mso-border-insidev: none;
+        }
+        td, tr {
+          border: none;
+          border-width: 0px;
+          border-style: none;
+          mso-border-alt: none;
+          mso-border-left-alt: none;
+          mso-border-top-alt: none;
+          mso-border-bottom-alt: none;
+          mso-border-right-alt: none;
         }
       </style>
     </head>

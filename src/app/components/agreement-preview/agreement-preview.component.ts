@@ -61,6 +61,9 @@ export class AgreementPreviewComponent {
   // Estado local para alternar pestañas
   protected readonly activeTab = signal<'preview' | 'editor'>('preview');
 
+  // Estado local para mostrar u ocultar la configuración de márgenes
+  protected readonly showMargins = signal<boolean>(false);
+
   // Estado local para el editor manual de texto
   protected manualText = '';
 
@@ -148,7 +151,7 @@ export class AgreementPreviewComponent {
     
     const certFooter = `${this.cierreCertificacionText()}\n\n**Y, PARA REMITIR A DONDE CORRESPONDA, COMPULSO LA PRESENTE CERTIFICACIÓN, DEBIDAMENTE CONFRONTADA CON SU ORIGINAL, LA QUE SELLO Y FIRMO, EN LA VILLA DE JOYABAJ, DEPARTAMENTO DE QUICHÉ, A ${fCert}.**`;
     
-    const firmasTable = `<table border="0" style="width: 100%; table-layout: fixed; border: none; border-collapse: collapse; margin-top: 16pt;"><tr><td style="width: 2.9in; border: none; padding: 0; vertical-align: top;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: ${this.lineSpacing() * 100}%;">${this.espacioFirmasBr()}<strong>${secr}</strong><br/>Secretaria Municipal</p></td><td style="width: 0.7in; border: none; padding: 0;">&nbsp;</td><td style="width: 2.9in; border: none; padding: 0; vertical-align: top;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: ${this.lineSpacing() * 100}%;">${this.espacioFirmasBr()}Vo. Bo. &nbsp; <strong>${alc}</strong><br/>Alcalde Municipal</p></td></tr></table>`;
+    const firmasTable = `<table border="0" cellpadding="0" cellspacing="0" style="width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 16pt; mso-table-lspace: 0pt; mso-table-rspace: 0pt; mso-table-bspace: 0pt; mso-table-tspace: 0pt; mso-border-alt: none; mso-border-insideh: none; mso-border-insidev: none; border: 1px none; border-top: 1px none; border-bottom: 1px none; border-left: 1px none; border-right: 1px none;"><tr><td style="width: 2.9in; padding: 0; vertical-align: top; mso-border-alt: none; mso-border-left-alt: none; mso-border-top-alt: none; mso-border-bottom-alt: none; mso-border-right-alt: none; border: 1px none; border-top: 1px none; border-bottom: 1px none; border-left: 1px none; border-right: 1px none;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: ${this.lineSpacing() * 100}%;">${this.espacioFirmasBr()}<strong>${secr}</strong><br/>Secretaria Municipal</p></td><td style="width: 0.7in; padding: 0; mso-border-alt: none; mso-border-left-alt: none; mso-border-top-alt: none; mso-border-bottom-alt: none; mso-border-right-alt: none; border: 1px none; border-top: 1px none; border-bottom: 1px none; border-left: 1px none; border-right: 1px none;">&nbsp;</td><td style="width: 2.9in; padding: 0; vertical-align: top; mso-border-alt: none; mso-border-left-alt: none; mso-border-top-alt: none; mso-border-bottom-alt: none; mso-border-right-alt: none; border: 1px none; border-top: 1px none; border-bottom: 1px none; border-left: 1px none; border-right: 1px none;"><p style="text-align: center; margin: 0; font-family: ${this.fontStack()}; font-size: ${this.fontSizeFirmas()}pt; line-height: ${this.lineSpacing() * 100}%;">${this.espacioFirmasBr()}Vo. Bo. &nbsp; <strong>${alc}</strong><br/>Alcalde Municipal</p></td></tr></table>`;
 
     return `${certHeader}\n\n${text}\n\n${certFooter}\n\n${firmasTable}`;
   });
@@ -179,7 +182,12 @@ export class AgreementPreviewComponent {
 
   // --- Dimensiones visuales dinámicas ---
   getPreviewPadding(): string {
-    return `${this.marginTop()}cm ${this.marginRight()}cm ${this.marginBottom()}cm ${this.marginLeft()}cm`;
+    const factor = 0.45; // Factor de escala para que la vista previa en pantalla no tenga márgenes excesivos
+    const t = (this.marginTop() * factor).toFixed(2);
+    const r = (this.marginRight() * factor).toFixed(2);
+    const b = (this.marginBottom() * factor).toFixed(2);
+    const l = (this.marginLeft() * factor).toFixed(2);
+    return `${t}cm ${r}cm ${b}cm ${l}cm`;
   }
 
   getPreviewAspectRatio(): string {

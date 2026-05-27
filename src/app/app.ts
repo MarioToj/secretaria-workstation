@@ -256,6 +256,19 @@ export class App {
 
   private loadNumFromStorage(key: string, defaultValue: number): number {
     if (typeof localStorage !== 'undefined') {
+      // Migrar el tamaño por defecto de 12 a 11 si el usuario no lo ha personalizado explícitamente
+      const migrated = localStorage.getItem('invoice_app_fontsize_migrated_v11');
+      if (!migrated) {
+        const keys = ['fontSizeGeneral', 'fontSizeCert', 'fontSizeIncisos', 'fontSizeFirmas', 'fontSizeCierreCert'];
+        keys.forEach(k => {
+          const val = localStorage.getItem(`invoice_app_${k}`);
+          if (val === '12' || !val) {
+            localStorage.setItem(`invoice_app_${k}`, '11');
+          }
+        });
+        localStorage.setItem('invoice_app_fontsize_migrated_v11', 'true');
+      }
+
       const val = localStorage.getItem(`invoice_app_${key}`);
       if (val) {
         const parsed = parseInt(val, 10);
