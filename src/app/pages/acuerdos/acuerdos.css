@@ -1,1 +1,12 @@
 /* Estilos específicos de Acuerdos de Pago */
+:host {
+  display: block;
+  width: 100%;
+}
+
+@media (min-width: 1280px) {
+  :host {
+    height: 100%;
+    min-height: 0;
+  }
+}
