@@ -1,0 +1,10 @@
+@if (certificar()) {
+  <p [style.font-size.pt]="fontSizeCert()" style="margin: 0; text-align: justify;"><strong>LA INFRASCRITA SECRETARIA MUNICIPAL DE LA VILLA DE JOYABAJ, DEL DEPARTAMENTO DE QUICHÉ, CERTIFICA:</strong> Tener a la Vista el libro de Actas de la Corporación Municipal en uso debidamente autorizado por la Contraloría General de Cuentas de Quiché, en el cual se encuentra el Acta número <strong>{{ numeroActa() }} </strong>, correspondiente a la Sesión Pública <strong>{{ tipoSesion() }}</strong>, celebrada con fecha <strong>{{ fechaSesion() }}</strong>, en donde aparece el punto que copiado conducentemente establece:</p>
+}
+
+<ng-content></ng-content>
+
+@if (certificar()) {
+  <p [style.font-size.pt]="fontSizeCierreCert()" style="margin: 0; text-align: justify;">{{ cierreCertificacionText() }}</p>
+  <p [style.font-size.pt]="fontSizeCert()" style="margin: 0; text-align: justify;"><strong>Y, PARA REMITIR A DONDE CORRESPONDA, COMPULSO LA PRESENTE CERTIFICACIÓN, DEBIDAMENTE CONFRONTADA CON SU ORIGINAL, LA QUE SELLO Y FIRMO, EN LA VILLA DE JOYABAJ, DEPARTAMENTO DE QUICHÉ, A {{ fechaCertificacion() }}.</strong></p>
+}
