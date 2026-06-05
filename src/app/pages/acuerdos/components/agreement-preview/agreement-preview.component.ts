@@ -110,6 +110,10 @@ export class AgreementPreviewComponent {
   // Estado local para el editor manual de texto
   protected manualText = '';
 
+  // Validación de solicitantes antes de descarga/impresión
+  protected readonly showValidationError = signal<boolean>(false);
+  protected readonly validationErrorMsg = signal<string>('');
+
   constructor() {
     effect(() => {
       this.manualText = this.compiledMarkdownText();
@@ -130,6 +134,13 @@ export class AgreementPreviewComponent {
       // Aplicar al elemento raíz del documento
       document.documentElement.style.setProperty('--print-page-size', sizePrint);
       document.documentElement.style.setProperty('--print-page-margin', marginPrint);
+    });
+
+    // Efecto para ocultar el mensaje de error si el usuario solventa los solicitantes faltantes
+    effect(() => {
+      if (this.showValidationError() && !this.hasMissingApplicants()) {
+        this.showValidationError.set(false);
+      }
     });
   }
 
@@ -194,7 +205,29 @@ export class AgreementPreviewComponent {
     return ratios[this.selectedPageSize()];
   }
 
+  protected hasMissingApplicants(): boolean {
+    return this.facturas().some(f => !f.solicitantes || f.solicitantes.trim() === '');
+  }
+
+  private handleMissingApplicantsError(actionType: 'descargar' | 'imprimir'): void {
+    const pendingNames = this.facturas()
+      .map((f, idx) => ({ f, roman: getRomanNumeral(idx + 1) }))
+      .filter(item => !item.f.solicitantes || item.f.solicitantes.trim() === '')
+      .map(item => `Factura ${item.roman}`)
+      .join(', ');
+    
+    this.validationErrorMsg.set(
+      `Para ${actionType} el archivo, debe agregar al solicitante en las siguientes facturas: ${pendingNames}`
+    );
+    this.showValidationError.set(true);
+  }
+
   exportToWord(format: 'docx' | 'doc'): void {
+    if (this.hasMissingApplicants()) {
+      this.handleMissingApplicantsError('descargar');
+      return;
+    }
+
     const textToExport = this.activeTab() === 'editor' ? this.manualText : this.compiledMarkdownText();
     const filename = this.currentFilename();
     const tIn = this.marginTop() / 2.54;
@@ -240,6 +273,11 @@ export class AgreementPreviewComponent {
   }
 
   printPdf(): void {
+    if (this.hasMissingApplicants()) {
+      this.handleMissingApplicantsError('imprimir');
+      return;
+    }
+
     if (this.activeTab() === 'editor') {
       this.activeTab.set('preview');
     }

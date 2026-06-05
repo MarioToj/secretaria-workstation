@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Factura } from '../../interfaces/factura.interface';
 import { InvoiceCardComponent } from './invoice-card/invoice-card.component';
@@ -24,6 +24,15 @@ export class InvoiceListComponent {
   readonly invoiceUpdated = output<Factura>();
   readonly uploadPdfs = output<File[]>();
   readonly attachPdf = output<File>();
+
+  // Suma total calculada de todas las facturas
+  readonly totalSum = computed(() => {
+    return this.facturas().reduce((sum, f) => sum + (f.total || 0), 0);
+  });
+
+  formatNumber(val: number): string {
+    return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();

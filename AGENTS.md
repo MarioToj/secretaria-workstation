@@ -53,3 +53,19 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+
+## Project Architecture & Directory Structure
+
+Follow a **Feature-based + Shared Architecture** to group domain logic and maintain scalability:
+
+- **Features (`src/app/pages/<feature-name>/`)**: Place each route/page and all its exclusive assets inside its own feature directory.
+  - `components/`: Feature-specific presentation and container subcomponents. Nest children under parent components if applicable.
+  - `services/`: Feature-specific singleton business logic services.
+  - `interfaces/`: TypeScript interfaces used only by this feature.
+  - `types/`: Custom union or alias types specific to this feature.
+  - `patterns/`: Default configuration patterns and regex constants specific to this feature.
+  - `utils/`: Custom pure utilities or export logic specific to this feature.
+- **Shared (`src/app/shared/`)**: Place elements used by multiple features here.
+  - `utils/`: Global, pure utility files (e.g., date and number formatting).
+  - `types/`: Shared TypeScript union types or aliases (e.g., global PageSize).
+  - **Decoupling Rule**: *Must NOT* import feature-specific files, configurations, or patterns into the `shared/` directory. Keep shared modules completely decoupled.
