@@ -1,15 +1,16 @@
 import { Component, ChangeDetectionStrategy, signal, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PdfExtractorService } from './services/pdf-extractor.service';
-import { InvoiceParserService } from './services/invoice-parser.service';
-import { ExtractionPatterns } from './interfaces/extraction-patterns.interface';
+import { ExtractorPdfService } from './services/extractor-pdf.service';
+import { AnalizadorFacturaService } from './services/analizador-factura.service';
+import { PatronesExtraccion } from './interfaces/patrones-extraccion.interface';
 import { Factura } from './interfaces/factura.interface';
-import { SesionType } from './types/sesion-type.type';
-import { PdfUploaderComponent } from './components/pdf-uploader/pdf-uploader.component';
-import { ExtractionSettingsComponent } from './components/extraction-settings/extraction-settings.component';
-import { InvoiceListComponent } from './components/invoice-list/invoice-list.component';
-import { AgreementPreviewComponent } from './components/agreement-preview/agreement-preview.component';
+import { TipoSesion } from './types/tipo-sesion.type';
+import { AjustesExtraccionComponent } from './components/ajustes-extraccion/ajustes-extraccion.component';
+import { ListaFacturasComponent } from './components/lista-facturas/lista-facturas.component';
+import { VistaPreviaAcuerdoComponent } from './components/vista-previa-acuerdo/vista-previa-acuerdo.component';
+import { AcuerdosBienvenidaComponent } from './components/acuerdos-bienvenida/acuerdos-bienvenida.component';
+import { AjustesAcuerdoComponent } from './components/ajustes-acuerdo/ajustes-acuerdo.component';
 import { getClosestPastWednesday, dateToSpanishWords, dateToSpanishCertDate } from '../../shared/utils/date.util';
 
 @Component({
@@ -18,17 +19,18 @@ import { getClosestPastWednesday, dateToSpanishWords, dateToSpanishCertDate } fr
   imports: [
     CommonModule,
     FormsModule,
-    PdfUploaderComponent,
-    ExtractionSettingsComponent,
-    InvoiceListComponent,
-    AgreementPreviewComponent
+    AjustesExtraccionComponent,
+    ListaFacturasComponent,
+    VistaPreviaAcuerdoComponent,
+    AcuerdosBienvenidaComponent,
+    AjustesAcuerdoComponent
   ],
   templateUrl: './acuerdos.component.html',
   styleUrl: './acuerdos.component.css'
 })
 export class AcuerdosComponent {
-  private readonly pdfExtractorService = inject(PdfExtractorService);
-  private readonly invoiceParserService = inject(InvoiceParserService);
+  private readonly extractorPdfService = inject(ExtractorPdfService);
+  private readonly analizadorFacturaService = inject(AnalizadorFacturaService);
 
   // --- Estado de la Aplicación mediante Signals ---
   
@@ -39,7 +41,7 @@ export class AcuerdosComponent {
   readonly selectedInvoiceId = signal<string>('');
 
   // Configuración de patrones Regex para parsear facturas (con persistencia en localStorage)
-  readonly patterns = signal<ExtractionPatterns>(this.loadPatternsFromStorage());
+  readonly patterns = signal<PatronesExtraccion>(this.loadPatternsFromStorage());
 
   // Visibilidad del panel de configuración Regex
   readonly showSettings = signal<boolean>(false);
@@ -60,7 +62,7 @@ export class AcuerdosComponent {
   readonly certificar = signal<boolean>(false);
   readonly nombreSecretaria = signal<string>('Karen Raquél Gómez López');
   readonly nombreAlcalde = signal<string>('Mateo Velásquez Ralios');
-  readonly tipoSesion = signal<SesionType>('Ordinaria');
+  readonly tipoSesion = signal<TipoSesion>('Ordinaria');
   readonly numeroActa = signal<string>('016-2,025');
   readonly fechaSesion = signal<string>(dateToSpanishWords(getClosestPastWednesday()));
   readonly fechaCertificacion = signal<string>(dateToSpanishCertDate(new Date()));
@@ -86,7 +88,7 @@ export class AcuerdosComponent {
 
   // --- Manejo de Eventos y Lógica ---
 
-  private loadPatternsFromStorage(): ExtractionPatterns {
+  private loadPatternsFromStorage(): PatronesExtraccion {
     if (typeof localStorage !== 'undefined') {
       const stored = localStorage.getItem('invoice_extraction_patterns_v8');
       if (stored) {
@@ -97,10 +99,10 @@ export class AcuerdosComponent {
         }
       }
     }
-    return { ...this.invoiceParserService.defaultPatterns };
+    return { ...this.analizadorFacturaService.defaultPatterns };
   }
 
-  onPatternsChanged(newPatterns: ExtractionPatterns): void {
+  onPatternsChanged(newPatterns: PatronesExtraccion): void {
     this.patterns.set(newPatterns);
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('invoice_extraction_patterns_v8', JSON.stringify(newPatterns));
@@ -116,10 +118,10 @@ export class AcuerdosComponent {
       let lastExtractedText = '';
       
       for (const file of files) {
-        const extractedText = await this.pdfExtractorService.extractText(file);
+        const extractedText = await this.extractorPdfService.extractText(file);
         lastExtractedText = extractedText;
 
-        const parsedInvoice = this.invoiceParserService.parseInvoice(extractedText, this.patterns());
+        const parsedInvoice = this.analizadorFacturaService.parseInvoice(extractedText, this.patterns());
         parsedInvoices.push(parsedInvoice);
       }
       
@@ -191,10 +193,10 @@ export class AcuerdosComponent {
     this.errorMessage.set('');
 
     try {
-      const extractedText = await this.pdfExtractorService.extractText(file);
+      const extractedText = await this.extractorPdfService.extractText(file);
       this.rawText.set(extractedText);
 
-      const parsed = this.invoiceParserService.parseInvoice(extractedText, this.patterns());
+      const parsed = this.analizadorFacturaService.parseInvoice(extractedText, this.patterns());
       parsed.id = active.id;
       parsed.solicitantes = active.solicitantes;
 

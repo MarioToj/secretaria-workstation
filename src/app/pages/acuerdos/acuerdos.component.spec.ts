@@ -18,14 +18,14 @@ vi.mock('pdfjs-dist', () => {
 
 import { TestBed } from '@angular/core/testing';
 import { AcuerdosComponent } from './acuerdos.component';
-import { PdfExtractorService } from './services/pdf-extractor.service';
-import { InvoiceParserService } from './services/invoice-parser.service';
+import { ExtractorPdfService } from './services/extractor-pdf.service';
+import { AnalizadorFacturaService } from './services/analizador-factura.service';
 
 describe('AcuerdosComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AcuerdosComponent],
-      providers: [PdfExtractorService, InvoiceParserService]
+      providers: [ExtractorPdfService, AnalizadorFacturaService]
     }).compileComponents();
   });
 
