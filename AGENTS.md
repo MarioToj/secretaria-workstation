@@ -13,6 +13,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Must NOT set `standalone: true` inside Angular decorators. It's the default in Angular v20+.
 - Use signals for state management
 - Implement lazy loading for feature routes
+- Use named, exported functions for route guards (e.g., `CanActivateFn`, `CanDeactivateFn`) rather than inline anonymous functions in route configurations to ensure AOT compiler compliance and support unit testing with `RouterTestingHarness`.
 - Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
 - Use `NgOptimizedImage` for all static images.
   - `NgOptimizedImage` does not work for inline base64 images.
@@ -61,6 +62,7 @@ Follow a **Feature-based + Shared Architecture** to group domain logic and maint
 - **Features (`src/app/pages/<feature-name>/`)**: Place each route/page and all its exclusive assets inside its own feature directory.
   - `components/`: Feature-specific presentation and container subcomponents. Nest children under parent components if applicable.
   - `services/`: Feature-specific singleton business logic services.
+  - `guards/`: Feature-specific route guards (e.g., deactivation confirmation guards).
   - `interfaces/`: TypeScript interfaces used only by this feature.
   - `types/`: Custom union or alias types specific to this feature.
   - `patterns/`: Default configuration patterns and regex constants specific to this feature.
