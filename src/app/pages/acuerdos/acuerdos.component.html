@@ -27,10 +27,10 @@
 
   <!-- PANTALLA INICIAL: CARGA DE ARCHIVOS -->
   @if (facturas().length === 0) {
-    <app-acuerdos-welcome
+    <app-acuerdos-bienvenida
       (filesSelected)="onFilesSelected($event)"
       (invoiceAdded)="onInvoiceAdded()"
-    ></app-acuerdos-welcome>
+    ></app-acuerdos-bienvenida>
   }
 
   <!-- PANTALLA PRINCIPAL: SPLIT SCREEN (EDICIÓN Y ACUERDO) -->
@@ -52,7 +52,7 @@
         </div>
 
         <!-- Lista de facturas consolidadas con editor inline -->
-        <app-invoice-list 
+        <app-lista-facturas 
           [facturas]="facturas()" 
           [selectedId]="selectedInvoiceId()"
           (invoiceSelected)="onInvoiceSelected($event)"
@@ -61,10 +61,10 @@
           (invoiceUpdated)="onInvoiceUpdated($event)"
           (uploadPdfs)="onFilesSelected($event)"
           (attachPdf)="onAttachPdfToActive($event)"
-        ></app-invoice-list>
+        ></app-lista-facturas>
 
         <!-- Datos Generales del Acuerdo Municipal -->
-        <app-agreement-settings
+        <app-ajustes-acuerdo
           (click)="selectedInvoiceId.set('')"
           [(certificar)]="certificar"
           [(puntoActa)]="puntoActa"
@@ -87,12 +87,12 @@
           [cierreCertificacionText]="cierreCertificacionText()"
           (cierreCertificacionTextChange)="onCierreCertTextChange($event)"
           (configureRegex)="showSettings.set(true)"
-        ></app-agreement-settings>
+        ></app-ajustes-acuerdo>
       </div>
 
       <!-- Columna Derecha: Vista Previa en Vivo -->
       <div class="xl:col-span-7 min-h-0 print:block print:w-full print:static">
-        <app-agreement-preview
+        <app-vista-previa-acuerdo
           [facturas]="facturas()"
           [puntoActa]="puntoActa()"
           [encabezado]="encabezado()"
@@ -114,7 +114,7 @@
           [espacioFirmas]="espacioFirmas()"
           [lineSpacing]="lineSpacing()"
           class="h-full block min-h-0"
-        ></app-agreement-preview>
+        ></app-vista-previa-acuerdo>
       </div>
 
     </div>
@@ -124,12 +124,12 @@
   @if (showSettings()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm print:hidden">
       <div class="w-full max-w-5xl h-[85vh] transition-all">
-        <app-extraction-settings
+        <app-ajustes-extraccion
           [rawText]="rawText()"
           [patterns]="patterns()"
           (patternsChange)="onPatternsChanged($event)"
           (close)="showSettings.set(false)"
-        ></app-extraction-settings>
+        ></app-ajustes-extraccion>
       </div>
     </div>
   }
