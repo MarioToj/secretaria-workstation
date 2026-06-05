@@ -1,0 +1,12 @@
+<p style="margin: 0; text-align: justify;"><strong><u>{{ puntoActa() }}</u></strong>: {{ encabezado() }}</p>
+
+<p style="margin: 0; font-weight: bold; text-align: center;">ACUERDA:</p>
+
+<ol type="I" class="roman-list space-y-0" [style.font-size.pt]="fontSizeIncisos()" style="margin: 0; padding-left: 0.5in; list-style-type: upper-roman;">
+  @for (fact of facturas(); track fact.id; let idx = $index) {
+    <li [style.font-size.pt]="fontSizeIncisos()" style="text-align: justify; padding-left: 0.15in;">Aprobar el pago de la factura serie <strong>{{ fact.serie }}</strong> Número de DTE <strong>{{ fact.dte }}</strong>, de fecha <strong>{{ fact.fecha }}</strong>, a <strong>{{ fact.establecimiento }}</strong>, con dirección en <strong>{{ fact.direccion }}</strong>@if (fact.dueno && fact.dueno !== 'PROPIETARIO NO ENCONTRADO') { propiedad {{ fact.tratamientoDueno }} <strong>{{ fact.dueno }}</strong>}, por un valor de: <strong>{{ fact.totalEnLetras }}</strong> (<strong>Q.{{ formatNumber(fact.total) }}</strong>), en concepto de pago de: <span [innerHTML]="getFormattedConcept(fact)"></span>@if (fact.solicitantes) {, a solicitud {{ fact.prefijoSolicitantes === 'los' || fact.prefijoSolicitantes === 'las' ? 'de ' + fact.prefijoSolicitantes : fact.prefijoSolicitantes || 'de' }} {{ fact.solicitantes }}}.</li>
+  }
+  
+  <!-- Cierre del Acuerdo -->
+  <li [style.font-size.pt]="fontSizeIncisos()" style="text-align: justify; padding-left: 0.15in;">{{ cierre() }}</li>
+</ol>

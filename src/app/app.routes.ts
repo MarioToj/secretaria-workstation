@@ -3,11 +3,11 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: 'acuerdos',
-    loadComponent: () => import('./pages/acuerdos/acuerdos').then(m => m.AcuerdosComponent)
+    loadComponent: () => import('./pages/acuerdos/acuerdos.component').then(m => m.AcuerdosComponent)
   },
   {
     path: 'inspecciones',
-    loadComponent: () => import('./pages/inspecciones/inspecciones').then(m => m.InspeccionesComponent)
+    loadComponent: () => import('./pages/inspecciones/inspecciones.component').then(m => m.InspeccionesComponent)
   },
   {
     path: '',

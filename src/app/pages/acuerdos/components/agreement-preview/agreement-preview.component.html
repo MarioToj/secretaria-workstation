@@ -1,0 +1,86 @@
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl h-auto xl:h-full flex flex-col min-h-0 print:border-none print:bg-white print:p-0 print:shadow-none">
+  
+  <!-- Barra de Controles Compacta (Ocultar al imprimir) -->
+  <app-agreement-controls
+    [activeTab]="activeTab()"
+    (activeTabChange)="activeTab.set($event)"
+    [selectedPageSize]="selectedPageSize()"
+    (selectedPageSizeChange)="onPageSizeChange($event)"
+    [showMargins]="showMargins()"
+    (showMarginsChange)="showMargins.set($event)"
+    [marginTop]="marginTop()"
+    (marginTopChange)="marginTop.set($event)"
+    [marginBottom]="marginBottom()"
+    (marginBottomChange)="marginBottom.set($event)"
+    [marginLeft]="marginLeft()"
+    (marginLeftChange)="marginLeft.set($event)"
+    [marginRight]="marginRight()"
+    (marginRightChange)="marginRight.set($event)"
+    (exportWord)="exportToWord($event)"
+    (printPdf)="printPdf()"
+  ></app-agreement-controls>
+
+  <!-- Contenedor del Documento -->
+  <div class="flex-1 min-h-0 overflow-y-auto pr-1 select-text print:overflow-visible">
+    <!-- Vista Previa Compilada (Con formato HTML y hojas de estilo que emulan papel) -->
+    @if (activeTab() === 'preview') {
+      <div 
+        [style.--preview-padding]="getPreviewPadding()"
+        [style.font-family]="fontStack()"
+        [style.font-size.pt]="fontSizeGeneral()"
+        class="preview-container bg-white text-slate-900 border border-slate-200 rounded-2xl min-h-[500px] h-auto shadow-lg text-justify print:border-none print:p-0 print:shadow-none print:text-black mx-auto w-full transition-all duration-300"
+        [style.line-height]="lineSpacing()"
+      >
+        <app-agreement-certification
+          [certificar]="certificar()"
+          [numeroActa]="numeroActa()"
+          [tipoSesion]="tipoSesion()"
+          [fechaSesion]="fechaSesion()"
+          [fechaCertificacion]="fechaCertificacion()"
+          [cierreCertificacionText]="cierreCertificacionText()"
+          [fontSizeCert]="fontSizeCert()"
+          [fontSizeCierreCert]="fontSizeCierreCert()"
+        >
+          <app-agreement-invoices
+            [facturas]="facturas()"
+            [puntoActa]="puntoActa()"
+            [encabezado]="encabezado()"
+            [cierre]="cierre()"
+            [fontSizeIncisos]="fontSizeIncisos()"
+          ></app-agreement-invoices>
+        </app-agreement-certification>
+
+        @if (certificar()) {
+          <app-agreement-signatures
+            [nombreSecretaria]="nombreSecretaria()"
+            [nombreAlcalde]="nombreAlcalde()"
+            [espacioFirmas]="espacioFirmas()"
+            [fontSizeFirmas]="fontSizeFirmas()"
+            [lineSpacing]="lineSpacing()"
+          ></app-agreement-signatures>
+        }
+      </div>
+    }
+
+    <!-- Editor Libre (Para cambios finos directos en el texto final) -->
+    @if (activeTab() === 'editor') {
+      <div class="h-full flex flex-col gap-2 min-h-[600px] print:hidden">
+        <div class="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
+          <span>Puedes usar marcas **texto** para negrita en este editor.</span>
+          <button 
+            (click)="resetManualText()"
+            class="text-indigo-400 hover:text-indigo-300 font-semibold"
+          >
+            Regenerar desde Formulario
+          </button>
+        </div>
+        <textarea 
+          [(ngModel)]="manualText"
+          class="flex-1 w-full p-6 bg-slate-950 border border-slate-800 text-slate-300 font-mono text-sm leading-relaxed rounded-2xl outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none select-text"
+          placeholder="Escribe o edita el acuerdo libremente aquí..."
+        ></textarea>
+      </div>
+    }
+  </div>
+
+</div>
