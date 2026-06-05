@@ -6,7 +6,12 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
-    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm print:hidden" role="dialog" aria-modal="true">
+    <div 
+      class="fixed inset-0 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm print:hidden" 
+      style="z-index: 999999;" 
+      role="dialog" 
+      aria-modal="true"
+    >
       <div class="w-full max-w-md bg-slate-900 border border-slate-800/80 rounded-3xl shadow-2xl p-6 flex flex-col gap-4 animate-[fadeIn_0.2s_ease-out]">
         <div>
           <h3 class="text-lg font-bold text-white flex items-center gap-2">

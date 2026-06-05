@@ -40,4 +40,31 @@ describe('AcuerdosComponent', () => {
     const component = fixture.componentInstance;
     expect(component.facturas().length).toBe(0);
   });
+
+  it('should show clear confirmation modal when resetAll is called with invoices', () => {
+    const fixture = TestBed.createComponent(AcuerdosComponent);
+    const component = fixture.componentInstance;
+    
+    component.onInvoiceAdded();
+    fixture.detectChanges();
+    
+    expect(component.facturas().length).toBe(1);
+    
+    component.resetAll();
+    fixture.detectChanges();
+    
+    expect(component.mostrarConfirmacionLimpiar()).toBe(true);
+  });
+
+  it('should show exit confirmation modal and return a pending promise when canDeactivate is called with invoices', () => {
+    const fixture = TestBed.createComponent(AcuerdosComponent);
+    const component = fixture.componentInstance;
+    
+    component.onInvoiceAdded();
+    fixture.detectChanges();
+    
+    const canDeact = component.canDeactivate();
+    expect(canDeact).toBeInstanceOf(Promise);
+    expect(component.mostrarConfirmacionSalida()).toBe(true);
+  });
 });

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatronesExtraccion } from './interfaces/patrones-extraccion.interface';
@@ -30,6 +30,7 @@ import { AcuerdosStore } from './services/acuerdos.store';
 })
 export class AcuerdosComponent {
   private readonly store = inject(AcuerdosStore);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   // --- Signals de control para diálogos de confirmación ---
   readonly mostrarConfirmacionSalida = signal<boolean>(false);
@@ -105,13 +106,16 @@ export class AcuerdosComponent {
   resetAll(): void {
     if (this.facturas().length > 0) {
       this.mostrarConfirmacionLimpiar.set(true);
+      this.cdr.detectChanges();
     }
   }
 
   onConfirmarLimpiar(confirmado: boolean): void {
     this.mostrarConfirmacionLimpiar.set(false);
+    this.cdr.detectChanges();
     if (confirmado) {
       this.store.resetAll();
+      this.cdr.detectChanges();
     }
   }
 
@@ -125,6 +129,7 @@ export class AcuerdosComponent {
       return true;
     }
     this.mostrarConfirmacionSalida.set(true);
+    this.cdr.detectChanges();
     return new Promise<boolean>((resolve) => {
       this.confirmarSalidaPromise = resolve;
     });
@@ -132,6 +137,7 @@ export class AcuerdosComponent {
 
   onConfirmarSalida(salir: boolean): void {
     this.mostrarConfirmacionSalida.set(false);
+    this.cdr.detectChanges();
     if (this.confirmarSalidaPromise) {
       this.confirmarSalidaPromise(salir);
       this.confirmarSalidaPromise = null;
