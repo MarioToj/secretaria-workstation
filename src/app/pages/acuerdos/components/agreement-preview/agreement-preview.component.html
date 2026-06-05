@@ -1,4 +1,4 @@
-<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl h-auto xl:h-full flex flex-col min-h-0 print:border-none print:bg-white print:p-0 print:shadow-none">
+<div class="bg-slate-900/60 backdrop-blur-md border border-slate-800/85 rounded-3xl p-6 shadow-2xl h-auto xl:h-full flex flex-col min-h-0 print:border-none print:bg-white print:p-0 print:shadow-none transition-all duration-300 hover:border-slate-800">
   
   <!-- Mensaje de Validación de Solicitantes (Ocultar al imprimir) -->
   @if (showValidationError()) {
@@ -39,14 +39,14 @@
   ></app-agreement-controls>
 
   <!-- Contenedor del Documento -->
-  <div class="flex-1 min-h-0 overflow-y-auto pr-1 select-text print:overflow-visible">
+  <div class="flex-1 min-h-0 overflow-y-auto p-5 bg-slate-950/45 border border-slate-800/60 rounded-2xl select-text print:p-0 print:bg-transparent print:border-none">
     <!-- Vista Previa Compilada (Con formato HTML y hojas de estilo que emulan papel) -->
     @if (activeTab() === 'preview') {
       <div 
         [style.--preview-padding]="getPreviewPadding()"
         [style.font-family]="fontStack()"
         [style.font-size.pt]="fontSizeGeneral()"
-        class="preview-container bg-white text-slate-900 border border-slate-200 rounded-2xl min-h-[500px] h-auto shadow-lg text-justify print:border-none print:p-0 print:shadow-none print:text-black mx-auto w-full transition-all duration-300"
+        class="preview-container bg-white text-slate-900 border border-slate-200/80 rounded-xl min-h-[500px] h-auto shadow-[0_15px_30px_rgba(0,0,0,0.35)] text-justify print:border-none print:p-0 print:shadow-none print:text-black mx-auto w-full max-w-[800px] transition-all duration-300"
         [style.line-height]="lineSpacing()"
       >
         <app-agreement-certification
@@ -94,8 +94,8 @@
         </div>
         <textarea 
           [(ngModel)]="manualText"
-          class="flex-1 w-full p-6 bg-slate-950 border border-slate-800 text-slate-300 font-mono text-sm leading-relaxed rounded-2xl outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none select-text"
-          placeholder="Escribe o edita el acuerdo libremente aquí..."
+          class="flex-1 w-full p-6 bg-slate-950 border border-slate-800 text-slate-300 font-mono text-sm leading-relaxed rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 resize-none select-text"
+          placeholder="Escribe o edita el acuerdo libremente aquí…"
         ></textarea>
       </div>
     }

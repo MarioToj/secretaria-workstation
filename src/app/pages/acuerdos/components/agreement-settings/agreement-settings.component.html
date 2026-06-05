@@ -1,0 +1,258 @@
+<div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+  <h3 class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Ajustes del Acuerdo</h3>
+  <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+    <span class="text-[10px] font-bold text-slate-400 uppercase">Certificar:</span>
+    <input 
+      id="certificarAcuerdo"
+      type="checkbox" 
+      [(ngModel)]="certificar" 
+      class="toggle toggle-primary toggle-sm focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+      aria-label="Certificar acuerdo municipal"
+    />
+  </label>
+</div>
+
+<div class="grid grid-cols-1 gap-3.5">
+  <div class="flex flex-col gap-1.5">
+    <label for="puntoActa" class="text-[10px] font-bold text-slate-450 uppercase">Punto de Acta / Resolución</label>
+    <input 
+      id="puntoActa"
+      type="text" 
+      [(ngModel)]="puntoActa" 
+      placeholder="Ej: DÉCIMO NOVENO…"
+      autocomplete="off"
+      class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all font-bold"
+    />
+  </div>
+  <div class="flex flex-col gap-1.5">
+    <label for="encabezado" class="text-[10px] font-bold text-slate-455 uppercase">Encabezado Resolutivo</label>
+    <textarea 
+      id="encabezado"
+      [(ngModel)]="encabezado" 
+      rows="4"
+      autocomplete="off"
+      placeholder="Escribe el encabezado…"
+      class="textarea textarea-bordered textarea-sm w-full bg-slate-950 text-slate-300 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all resize-y leading-relaxed"
+    ></textarea>
+  </div>
+  <div class="flex flex-col gap-1.5">
+    <label for="cierre" class="text-[10px] font-bold text-slate-455 uppercase">Cierre de Resolución</label>
+    <textarea 
+      id="cierre"
+      [(ngModel)]="cierre" 
+      rows="3"
+      autocomplete="off"
+      placeholder="Escribe el párrafo de cierre…"
+      class="textarea textarea-bordered textarea-sm w-full bg-slate-950 text-slate-300 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all resize-y leading-relaxed"
+    ></textarea>
+  </div>
+</div>
+
+<!-- Configuración de Tipografía y Tamaños -->
+<div class="border-t border-slate-800/80 pt-3.5 mt-1 flex flex-col gap-2.5">
+  <div class="flex items-center justify-between">
+    <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Tipografía y Tamaños (pt)</h4>
+    <button 
+      type="button"
+      (click)="configureRegex.emit()"
+      class="flex items-center gap-1 text-[9px] font-bold text-slate-400 hover:text-indigo-450 transition-all uppercase cursor-pointer"
+      title="Configurar patrones Regex"
+      aria-label="Configurar patrones Regex"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.0" stroke="currentColor" class="w-3.5 h-3.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827a1.125 1.125 0 0 1 .26 1.43l-1.297 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.645-.869L9.594 3.94ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" />
+      </svg>
+      Configurar Regex
+    </button>
+  </div>
+  
+  <div class="grid grid-cols-2 gap-2.5">
+    <div class="col-span-2 flex flex-col gap-1.5">
+      <label for="fontFamily" class="text-[9px] font-bold text-slate-500 uppercase">Fuente del Documento</label>
+      <select 
+        id="fontFamily"
+        [(ngModel)]="fontFamily"
+        class="select select-bordered select-sm w-full bg-slate-950 text-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all font-semibold cursor-pointer"
+      >
+        <option value="Arial">Arial</option>
+        <option value="Arial Narrow">Arial Narrow</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Calibri">Calibri</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Courier New">Courier New</option>
+      </select>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="fontSizeGeneral" class="text-[9px] font-bold text-slate-500 uppercase">Gral / Resolución</label>
+      <input 
+        id="fontSizeGeneral"
+        type="number" 
+        [(ngModel)]="fontSizeGeneral"
+        min="8" max="24"
+        class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl text-center focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none font-mono"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="fontSizeIncisos" class="text-[9px] font-bold text-slate-500 uppercase">Incisos / Facturas</label>
+      <input 
+        id="fontSizeIncisos"
+        type="number" 
+        [(ngModel)]="fontSizeIncisos"
+        min="8" max="24"
+        class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl text-center focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none font-mono"
+      />
+    </div>
+
+    <div class="col-span-2 flex flex-col gap-1.5 mt-1">
+      <div class="flex justify-between items-center text-[9px] font-bold text-slate-500 uppercase">
+        <label for="lineSpacingInput">Interlineado (Espaciado)</label>
+        <span class="text-indigo-400 font-mono font-bold">{{ lineSpacing().toFixed(2) }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <input 
+          id="lineSpacingInput"
+          type="range" 
+          [(ngModel)]="lineSpacing"
+          min="1.0" max="2.0" step="0.05"
+          class="range range-primary range-xs flex-1 accent-indigo-500 bg-slate-950 cursor-pointer border border-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:outline-none"
+        />
+        <input 
+          id="lineSpacingNumberInput"
+          type="number" 
+          [(ngModel)]="lineSpacing"
+          min="1.0" max="2.0" step="0.05"
+          aria-label="Espaciado de línea en valor numérico"
+          class="input input-bordered input-xs w-12 bg-slate-950 text-slate-200 text-center focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none font-mono"
+        />
+      </div>
+    </div>
+
+    @if (certificar()) {
+      <div class="flex flex-col gap-1.5">
+        <label for="fontSizeCert" class="text-[9px] font-bold text-slate-500 uppercase">Cert. Encabezado</label>
+        <input 
+          id="fontSizeCert"
+          type="number" 
+          [(ngModel)]="fontSizeCert"
+          min="8" max="24"
+          class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl text-center focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none font-mono"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label for="fontSizeCierreCert" class="text-[9px] font-bold text-slate-500 uppercase">Cert. Cierre</label>
+        <input 
+          id="fontSizeCierreCert"
+          type="number" 
+          [(ngModel)]="fontSizeCierreCert"
+          min="8" max="24"
+          class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl text-center focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none font-mono"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label for="fontSizeFirmas" class="text-[9px] font-bold text-slate-500 uppercase">Firmas / Sellos (pt)</label>
+        <input 
+          id="fontSizeFirmas"
+          type="number" 
+          [(ngModel)]="fontSizeFirmas"
+          min="8" max="24"
+          class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl text-center focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none font-mono"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label for="espacioFirmas" class="text-[9px] font-bold text-slate-500 uppercase">Espacio Firmas (líneas)</label>
+        <input 
+          id="espacioFirmas"
+          type="number" 
+          [(ngModel)]="espacioFirmas"
+          min="1" max="15"
+          class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl text-center focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none font-mono"
+        />
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Panel Adicional si Certificar está activo -->
+@if (certificar()) {
+  <div class="grid grid-cols-2 gap-2.5 border-t border-slate-800/80 pt-3.5 mt-1">
+    <div class="flex flex-col gap-1.5">
+      <label for="tipoSesion" class="text-[10px] font-bold text-slate-400 uppercase">Tipo de Sesión</label>
+      <select 
+        id="tipoSesion"
+        [(ngModel)]="tipoSesion"
+        class="select select-bordered select-sm w-full bg-slate-950 text-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all cursor-pointer"
+      >
+        <option value="Ordinaria">Ordinaria</option>
+        <option value="Extraordinaria">Extraordinaria</option>
+      </select>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="numeroActa" class="text-[10px] font-bold text-slate-400 uppercase">Número de Acta</label>
+      <input 
+        id="numeroActa"
+        type="text" 
+        [(ngModel)]="numeroActa"
+        autocomplete="off"
+        class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all font-mono"
+      />
+    </div>
+    <div class="col-span-2 flex flex-col gap-1.5">
+      <label for="fechaSesion" class="text-[10px] font-bold text-slate-400 uppercase">Fecha de Sesión (en letras)</label>
+      <input 
+        id="fechaSesion"
+        type="text" 
+        [(ngModel)]="fechaSesion"
+        autocomplete="off"
+        class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all"
+        placeholder="diecinueve de marzo del año dos mil veinticinco…"
+      />
+    </div>
+    <div class="col-span-2 flex flex-col gap-1.5">
+      <label for="fechaCertificacion" class="text-[10px] font-bold text-slate-400 uppercase">Fecha de Certificación (en letras)</label>
+      <input 
+        id="fechaCertificacion"
+        type="text" 
+        [(ngModel)]="fechaCertificacion"
+        autocomplete="off"
+        class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all"
+        placeholder="VEINTICUATRO DÍAS DEL MES DE MARZO DEL AÑO DOS MIL VEINTICINCO…"
+      />
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="nombreSecretaria" class="text-[10px] font-bold text-slate-400 uppercase">Secretaria Municipal</label>
+      <input 
+        id="nombreSecretaria"
+        type="text" 
+        [(ngModel)]="nombreSecretaria"
+        autocomplete="off"
+        class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all"
+      />
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="nombreAlcalde" class="text-[10px] font-bold text-slate-400 uppercase">Alcalde Municipal</label>
+      <input 
+        id="nombreAlcalde"
+        type="text" 
+        [(ngModel)]="nombreAlcalde"
+        autocomplete="off"
+        class="input input-bordered input-sm w-full bg-slate-950 text-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all"
+      />
+    </div>
+    <div class="col-span-2 flex flex-col gap-1.5">
+      <label for="cierreCertificacionText" class="text-[10px] font-bold text-slate-400 uppercase">Párrafo Cierre Certificación</label>
+      <textarea 
+        id="cierreCertificacionText"
+        [(ngModel)]="cierreCertificacionText" 
+        rows="4"
+        autocomplete="off"
+        placeholder="Escribe el párrafo de cierre…"
+        class="textarea textarea-bordered textarea-sm w-full bg-slate-950 text-slate-300 rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all resize-y leading-relaxed font-sans"
+      ></textarea>
+    </div>
+  </div>
+}

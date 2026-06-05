@@ -12,7 +12,7 @@
     </div>
     <button 
       (click)="onClose()" 
-      class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
+      class="btn btn-ghost btn-square text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer"
     >
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -32,17 +32,17 @@
         [(editablePatterns)]="editablePatterns"
         (patternsChange)="patternsChange.emit($event)"
       ></app-extraction-profiles>
-
+ 
       <app-extraction-fields
         [rawText]="rawText()"
         [(editablePatterns)]="editablePatterns"
         (patternsChange)="patternsChange.emit($event)"
       ></app-extraction-fields>
-
+ 
       <div class="pt-4 flex gap-3">
         <button 
           (click)="restoreDefaults()"
-          class="flex-1 py-2.5 px-4 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 font-medium rounded-xl text-sm transition-all"
+          class="btn btn-outline border-slate-700 text-slate-300 hover:bg-slate-800 rounded-xl w-full cursor-pointer"
         >
           Restaurar Valores por Defecto
         </button>

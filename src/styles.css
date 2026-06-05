@@ -1,13 +1,28 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@plugin "daisyui";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #030712; /* Premium extra dark gray/black background */
+  color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+}
 
 @media print {
-  html, body {
+  html,
+  body {
     background: white !important;
     color: black !important;
   }
   @page {
     size: var(--print-page-size, letter);
-    margin: var(--print-page-margin, 1.0in);
+    margin: var(--print-page-margin, 1in);
   }
 }
 

@@ -19,7 +19,7 @@ import { testPattern } from '../extraction-settings.helper';
           type="text" 
           [ngModel]="editablePatterns()[field.key]"
           (ngModelChange)="updatePattern(field.key, $event)"
-          class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-200 font-mono rounded-xl outline-none transition-all"
+          class="input input-bordered w-full bg-slate-950 text-slate-200 font-mono rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 outline-none transition-all"
         />
         <!-- Vista previa rápida del match sobre el texto plano -->
         <span class="text-[11px] text-emerald-400/90 font-medium italic min-h-[16px] truncate">

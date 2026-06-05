@@ -2,11 +2,16 @@
   (dragover)="onDragOver($event)" 
   (dragleave)="onDragLeave()" 
   (drop)="onDrop($event)"
-  [class]="'relative w-full max-w-2xl p-10 border-2 border-dashed rounded-3xl transition-all duration-300 flex flex-col items-center justify-center cursor-pointer group ' +
+  [class]="'relative w-full max-w-2xl p-10 border-2 border-dashed rounded-3xl transition-all duration-300 flex flex-col items-center justify-center cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ' +
            (isDragOver() 
              ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_30px_rgba(99,102,241,0.2)] scale-[1.01]' 
              : 'border-slate-700 bg-slate-900/40 hover:border-indigo-500/50 hover:bg-slate-900/60 hover:shadow-[0_10px_30px_rgba(0,0,0,0.3)]')"
   (click)="fileInput.click()"
+  (keydown.enter)="fileInput.click()"
+  (keydown.space)="$event.preventDefault(); fileInput.click()"
+  tabindex="0"
+  role="button"
+  aria-label="Cargar archivos de facturas PDF"
 >
   <!-- Input oculto -->
   <input 
@@ -40,7 +45,9 @@
   <!-- Botón secundario -->
   <button 
     type="button"
-    class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-600/30 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+    tabindex="-1"
+    aria-hidden="true"
+    class="btn btn-primary rounded-xl pointer-events-none shadow-md shadow-indigo-600/20"
   >
     Seleccionar Archivos
   </button>

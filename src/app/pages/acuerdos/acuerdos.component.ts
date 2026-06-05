@@ -6,10 +6,11 @@ import { InvoiceParserService } from './services/invoice-parser.service';
 import { ExtractionPatterns } from './interfaces/extraction-patterns.interface';
 import { Factura } from './interfaces/factura.interface';
 import { SesionType } from './types/sesion-type.type';
-import { PdfUploaderComponent } from './components/pdf-uploader/pdf-uploader.component';
 import { ExtractionSettingsComponent } from './components/extraction-settings/extraction-settings.component';
 import { InvoiceListComponent } from './components/invoice-list/invoice-list.component';
 import { AgreementPreviewComponent } from './components/agreement-preview/agreement-preview.component';
+import { AcuerdosWelcomeComponent } from './components/acuerdos-welcome/acuerdos-welcome.component';
+import { AgreementSettingsComponent } from './components/agreement-settings/agreement-settings.component';
 import { getClosestPastWednesday, dateToSpanishWords, dateToSpanishCertDate } from '../../shared/utils/date.util';
 
 @Component({
@@ -18,10 +19,11 @@ import { getClosestPastWednesday, dateToSpanishWords, dateToSpanishCertDate } fr
   imports: [
     CommonModule,
     FormsModule,
-    PdfUploaderComponent,
     ExtractionSettingsComponent,
     InvoiceListComponent,
-    AgreementPreviewComponent
+    AgreementPreviewComponent,
+    AcuerdosWelcomeComponent,
+    AgreementSettingsComponent
   ],
   templateUrl: './acuerdos.component.html',
   styleUrl: './acuerdos.component.css'
