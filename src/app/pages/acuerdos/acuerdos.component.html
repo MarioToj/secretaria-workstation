@@ -133,4 +133,30 @@
       </div>
     </div>
   }
+
+  <!-- MODAL DE CONFIRMACIÓN DE SALIDA (canDeactivate) -->
+  @if (mostrarConfirmacionSalida()) {
+    <app-dialogo-confirmacion
+      titulo="¿Salir de la Sección?"
+      mensaje="Tienes facturas o acuerdos cargados en esta sesión. Si sales de esta pantalla se perderá todo tu progreso actual de facturas."
+      textoConfirmar="Salir y Perder Progreso"
+      textoCancelar="Permanecer aquí"
+      tipo="danger"
+      (confirmar)="onConfirmarSalida(true)"
+      (cancelar)="onConfirmarSalida(false)"
+    ></app-dialogo-confirmacion>
+  }
+
+  <!-- MODAL DE CONFIRMACIÓN DE LIMPIEZA (resetAll) -->
+  @if (mostrarConfirmacionLimpiar()) {
+    <app-dialogo-confirmacion
+      titulo="¿Limpiar todo el Acuerdo?"
+      mensaje="Esta acción borrará definitivamente todas las facturas y la configuración que has establecido. ¿Quieres continuar?"
+      textoConfirmar="Confirmar Limpieza"
+      textoCancelar="Cancelar"
+      tipo="danger"
+      (confirmar)="onConfirmarLimpiar(true)"
+      (cancelar)="onConfirmarLimpiar(false)"
+    ></app-dialogo-confirmacion>
+  }
 </div>

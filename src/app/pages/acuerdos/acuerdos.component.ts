@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PatronesExtraccion } from './interfaces/patrones-extraccion.interface';
@@ -8,11 +8,13 @@ import { ListaFacturasComponent } from './components/lista-facturas/lista-factur
 import { VistaPreviaAcuerdoComponent } from './components/vista-previa-acuerdo/vista-previa-acuerdo.component';
 import { AcuerdosBienvenidaComponent } from './components/acuerdos-bienvenida/acuerdos-bienvenida.component';
 import { AjustesAcuerdoComponent } from './components/ajustes-acuerdo/ajustes-acuerdo.component';
+import { DialogoConfirmacionComponent } from '../../shared/components/dialogo-confirmacion/dialogo-confirmacion.component';
 import { AcuerdosStore } from './services/acuerdos.store';
 
 @Component({
   selector: 'app-acuerdos',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [AcuerdosStore],
   imports: [
     CommonModule,
     FormsModule,
@@ -20,13 +22,19 @@ import { AcuerdosStore } from './services/acuerdos.store';
     ListaFacturasComponent,
     VistaPreviaAcuerdoComponent,
     AcuerdosBienvenidaComponent,
-    AjustesAcuerdoComponent
+    AjustesAcuerdoComponent,
+    DialogoConfirmacionComponent
   ],
   templateUrl: './acuerdos.component.html',
   styleUrl: './acuerdos.component.css'
 })
 export class AcuerdosComponent {
   private readonly store = inject(AcuerdosStore);
+
+  // --- Signals de control para diálogos de confirmación ---
+  readonly mostrarConfirmacionSalida = signal<boolean>(false);
+  readonly mostrarConfirmacionLimpiar = signal<boolean>(false);
+  private confirmarSalidaPromise: ((value: boolean) => void) | null = null;
 
   // --- Estado de la Aplicación mediante Signals (Delegado al Store) ---
   readonly facturas = this.store.facturas;
@@ -95,10 +103,38 @@ export class AcuerdosComponent {
   }
 
   resetAll(): void {
-    this.store.resetAll();
+    if (this.facturas().length > 0) {
+      this.mostrarConfirmacionLimpiar.set(true);
+    }
+  }
+
+  onConfirmarLimpiar(confirmado: boolean): void {
+    this.mostrarConfirmacionLimpiar.set(false);
+    if (confirmado) {
+      this.store.resetAll();
+    }
   }
 
   onCierreCertTextChange(val: string): void {
     this.store.onCierreCertTextChange(val);
+  }
+
+  // --- CanDeactivate Guard Logic ---
+  canDeactivate(): Promise<boolean> | boolean {
+    if (this.facturas().length === 0) {
+      return true;
+    }
+    this.mostrarConfirmacionSalida.set(true);
+    return new Promise<boolean>((resolve) => {
+      this.confirmarSalidaPromise = resolve;
+    });
+  }
+
+  onConfirmarSalida(salir: boolean): void {
+    this.mostrarConfirmacionSalida.set(false);
+    if (this.confirmarSalidaPromise) {
+      this.confirmarSalidaPromise(salir);
+      this.confirmarSalidaPromise = null;
+    }
   }
 }
