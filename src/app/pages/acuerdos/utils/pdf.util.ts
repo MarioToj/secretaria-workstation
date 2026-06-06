@@ -13,6 +13,22 @@ if (typeof (Promise as any).withResolvers === 'undefined') {
   };
 }
 
+// Polyfill para ReadableStream async iterator (requerido para getTextContent() en Safari móvil)
+if (typeof ReadableStream !== 'undefined' && !(ReadableStream.prototype as any)[Symbol.asyncIterator]) {
+  (ReadableStream.prototype as any)[Symbol.asyncIterator] = async function* (this: ReadableStream) {
+    const reader = this.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) return;
+        yield value;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  };
+}
+
 /**
  * Obtiene la ruta absoluta del worker de PDF.js basándose en el baseHref actual.
  */
