@@ -1,12 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Configurar el worker de PDF.js usando el archivo copiado en el directorio público con fallback dinámico
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = window.location.origin + '/pdf.worker.min.mjs';
-} else {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-}
+import { loadPdfDocument } from '../utils/pdf.util';
 
 @Injectable({
   providedIn: 'root'
@@ -29,34 +22,8 @@ export class ExtractorPdfService {
         arrayBuffer = await this.readAsArrayBuffer(file);
       }
 
-      let pdf;
-      try {
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-        pdf = await loadingTask.promise;
-      } catch (workerError) {
-        console.warn('Fallo al inicializar el Web Worker de PDF.js local, intentando con CDN de unpkg...', workerError);
-        const originalWorkerSrc = pdfjsLib.GlobalWorkerOptions.workerSrc;
-        
-        try {
-          // Intentar cargar desde unpkg CDN para la misma versión
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@5.7.284/build/pdf.worker.min.mjs';
-          const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-          pdf = await loadingTask.promise;
-        } catch (cdnError) {
-          console.warn('Fallo al inicializar el Web Worker de PDF.js desde CDN, intentando con Fake Worker...', cdnError);
-          // Intentar con el fake worker (sin workerSrc) para entornos móviles/HTTP locales restrictivos
-          pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-          try {
-            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-            pdf = await loadingTask.promise;
-          } catch (fallbackError) {
-            // Restablecer por si acaso y lanzar el error original
-            pdfjsLib.GlobalWorkerOptions.workerSrc = originalWorkerSrc;
-            throw fallbackError;
-          }
-        }
-      }
-
+      // Cargar el documento PDF usando el utilitario que maneja el worker y el fallback a Fake Worker
+      const pdf = await loadPdfDocument(arrayBuffer);
       let fullText = '';
 
       for (let i = 1; i <= pdf.numPages; i++) {
