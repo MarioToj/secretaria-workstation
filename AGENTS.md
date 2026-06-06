@@ -1,6 +1,10 @@
 
 You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
 
+## Git / Repository Guidelines
+
+- Do NOT make any changes to the Git repository (including staging files, committing, or pushing) unless explicitly requested by the user.
+
 ## TypeScript Best Practices
 
 - Use strict type checking

@@ -50,7 +50,7 @@ export class AnalizadorFacturaService {
       id: Math.random().toString(36).substring(2, 9),
       dte: dte || 'DTE NO ENCONTRADO',
       serie: serie || 'SERIE NO ENCONTRADA',
-      numero: numero || 'NUMERO NO ENCONTRADO',
+      numero: numero || dte || 'NUMERO NO ENCONTRADO',
       fecha: fechaFormateada || 'FECHA NO ENCONTRADA',
       establecimiento: establecimiento || 'ESTABLECIMIENTO NO ENCONTRADO',
       direccion: direccion || 'DIRECCIÓN NO ENCONTRADA',
