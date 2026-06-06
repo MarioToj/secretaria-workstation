@@ -38,9 +38,10 @@ export class ExtractorPdfService {
       }
 
       return fullText;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al extraer texto del PDF con PDF.js:', error);
-      throw new Error('No se pudo procesar el archivo PDF. Asegúrate de que no esté corrupto o protegido.');
+      const details = error?.message || String(error);
+      throw new Error(`No se pudo procesar el archivo PDF. Asegúrate de que no esté corrupto o protegido. (Detalle: ${details})`);
     }
   }
 
